@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
 
 class MainWindowCard extends StatelessWidget {

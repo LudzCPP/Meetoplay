@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: lightBlue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const SafeArea(child: HomePage()),
+      home: const HomePage(),
     );
   }
 }

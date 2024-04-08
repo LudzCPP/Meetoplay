@@ -33,21 +33,23 @@ class MenuPage extends StatelessWidget {
                 cardIcon: SizedBox(
                   width: double.infinity,
                   height: 213,
-                  child: FlutterMap(
-                    options: const MapOptions(
-                      interactionOptions: InteractionOptions(
-                        flags: InteractiveFlag.none,
+                  child: AbsorbPointer(
+                    child: FlutterMap(
+                      options: const MapOptions(
+                        interactionOptions: InteractionOptions(
+                          flags: InteractiveFlag.none,
+                        ),
+                        initialCenter: LatLng(51.747224, 19.453870),
+                        initialZoom: 16.2,
                       ),
-                      initialCenter: LatLng(51.759247, 19.455982),
-                      initialZoom: 13.2,
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                      ],
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
-                      ),
-                    ],
                   ),
                 ),
               ),
