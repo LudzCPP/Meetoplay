@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightBlue,
       appBar: AppBar(
         title: const Text(
           'MEETOPLAY',
@@ -65,7 +64,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
         shape: const CircleBorder(),
-        backgroundColor: specialActionButtonColor,
+        backgroundColor: pink,
         elevation: 4.0,
         child: const Icon(Icons.add),
       ),

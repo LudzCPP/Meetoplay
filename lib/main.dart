@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:meetoplay/home_page.dart';
 import 'global_variables.dart';
 
@@ -23,6 +24,15 @@ class MyApp extends StatelessWidget {
           ),
           centerTitle: true,
         ),
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(
+            fontFamily: 'Opensans',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: white,
+          ),
+        ),
+        scaffoldBackgroundColor: lightBlue,
       ),
       debugShowCheckedModeBanner: false,
       home: const HomePage(),

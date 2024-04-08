@@ -40,12 +40,7 @@ class MainWindowCard extends StatelessWidget {
               width: double.infinity,
               child: Text(
                 cardText,
-                style: const TextStyle(
-                  fontFamily: 'Opensans',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: white,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           ],

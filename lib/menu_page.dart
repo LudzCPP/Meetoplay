@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:meetoplay/find_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/main_window_card.dart';
