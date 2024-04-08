@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/find_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/main_window_card.dart';
@@ -10,87 +12,100 @@ class MenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const MapPage();
-                      },
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const MapPage();
+                    },
+                  ),
+                );
+              },
+              child: MainWindowCard(
+                cardText: 'MAPA WYDARZEŃ',
+                cardHeight: 250,
+                cardIcon: SizedBox(
+                  width: double.infinity,
+                  height: 213,
+                  child: FlutterMap(
+                    options: const MapOptions(
+                      interactionOptions: InteractionOptions(
+                        flags: InteractiveFlag.none,
+                      ),
+                      initialCenter: LatLng(51.759247, 19.455982),
+                      initialZoom: 13.2,
                     ),
-                  );
-                },
-                child: const MainWindowCard(
-                  cardText: 'MAPA WYDARZEŃ',
-                  cardHeight: 250,
-                  cardIcon: Icon(
-                    Icons.map_outlined,
-                    size: 213,
-                    color: white,
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const Spacer(flex: 2),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const FindMeetPage();
-                      },
-                    ),
-                  );
-                },
-                child: const MainWindowCard(
-                  cardText: 'WYSZUKAJ SPOTKANIE',
-                  cardHeight: 110,
-                  cardIcon: Icon(
-                    Icons.search,
-                    size: 73,
-                    color: white,
+            ),
+            const Spacer(flex: 2),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const FindMeetPage();
+                    },
                   ),
+                );
+              },
+              child: const MainWindowCard(
+                cardText: 'WYSZUKAJ SPOTKANIE',
+                cardHeight: 110,
+                cardIcon: Icon(
+                  Icons.search,
+                  size: 73,
+                  color: white,
                 ),
               ),
-              const Spacer(flex: 1),
-              // MainWindowCard(
-              //   cardText: 'EDYTUJ PROFIL',
-              //   cardHeight: 100,
-              //   cardIcon: Icon(
-              //     Icons.edit,
-              //     size: 63,
-              //     color: white,
-              //   ),
-              // ),
-              // SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return const SettingsPage();
-                      },
-                    ),
-                  );
-                },
-                child: const MainWindowCard(
-                  cardText: 'OPCJE',
-                  cardHeight: 110,
-                  cardIcon: Icon(
-                    Icons.settings,
-                    size: 73,
-                    color: white,
+            ),
+            const Spacer(flex: 1),
+            // MainWindowCard(
+            //   cardText: 'EDYTUJ PROFIL',
+            //   cardHeight: 100,
+            //   cardIcon: Icon(
+            //     Icons.edit,
+            //     size: 63,
+            //     color: white,
+            //   ),
+            // ),
+            // SizedBox(height: 10),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const SettingsPage();
+                    },
                   ),
+                );
+              },
+              child: const MainWindowCard(
+                cardText: 'OPCJE',
+                cardHeight: 110,
+                cardIcon: Icon(
+                  Icons.settings,
+                  size: 73,
+                  color: white,
                 ),
               ),
-              const Spacer(flex: 6),
-            ],
-          ),
+            ),
+            const Spacer(flex: 6),
+          ],
         ),
       ),
     );

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
 
 class MainWindowCard extends StatelessWidget {
   final String cardText;
   final double cardHeight;
-  final Icon cardIcon;
+  final Widget cardIcon;
 
   const MainWindowCard({
     super.key,
@@ -24,11 +26,7 @@ class MainWindowCard extends StatelessWidget {
         color: const Color.fromARGB(255, 30, 156, 240),
         child: Column(
           children: [
-            cardText != 'MAPA WYDARZEŃ'
-                ? cardIcon
-                : const Placeholder(
-                    fallbackHeight: 213,
-                  ),
+            cardIcon,
             Container(
               decoration: const BoxDecoration(
                 color: orange,
