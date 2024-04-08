@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:meetoplay/global_variables.dart';
 
-
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: const Text(
           'MAPA',

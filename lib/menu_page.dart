@@ -36,9 +36,9 @@ class MenuPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const Spacer(flex: 2),
               GestureDetector(
-                onTap:() {
+                onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) {
@@ -57,7 +57,7 @@ class MenuPage extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const Spacer(flex: 1),
               // MainWindowCard(
               //   cardText: 'EDYTUJ PROFIL',
               //   cardHeight: 100,
@@ -88,6 +88,7 @@ class MenuPage extends StatelessWidget {
                   ),
                 ),
               ),
+              const Spacer(flex: 6),
             ],
           ),
         ),
