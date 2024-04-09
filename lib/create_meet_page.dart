@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meetoplay/global_variables.dart';
 
 class CreateMeetPage extends StatefulWidget {
-  const CreateMeetPage({Key? key}) : super(key: key);
+  const CreateMeetPage({super.key});
 
   @override
   _CreateMeetPageState createState() => _CreateMeetPageState();
@@ -38,7 +38,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
             children: <Widget>[
               TextFormField(
                 controller: _eventNameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Nazwa wydarzenia',
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: UnderlineInputBorder(
@@ -48,7 +48,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wpisać nazwę wydarzenia';
@@ -56,10 +56,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 20), // Dodaj odstęp między polami
+              const SizedBox(height: 20), // Dodaj odstęp między polami
               TextFormField(
                 controller: _locationController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Miejsce',
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: UnderlineInputBorder(
@@ -69,7 +69,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wpisać miejsce wydarzenia';
@@ -77,10 +77,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _dateController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Data',
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: UnderlineInputBorder(
@@ -90,7 +90,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wpisać datę wydarzenia';
@@ -106,7 +106,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     builder: (context, child) {
                       return Theme(
                         data: ThemeData.dark().copyWith(
-                          colorScheme: ColorScheme.dark(
+                          colorScheme: const ColorScheme.dark(
                             primary: specialActionButtonColor,
                             onPrimary: Colors.white,
                             surface: lightBlue,
@@ -138,13 +138,13 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         );
                       }
                     },
-                    child: const Text('Dodaj spotkanie'),
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
                           specialActionButtonColor), // Kolor tła przycisku
                       foregroundColor: MaterialStateProperty.all(
                           Colors.white), // Kolor tekstu przycisku
                     ),
+                    child: const Text('Dodaj spotkanie'),
                   ),
                 ),
               ),

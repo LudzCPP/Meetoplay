@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meetoplay/home_page.dart';
 import 'global_variables.dart';
 
-
 void main() {
   runApp(const MyApp());
 }

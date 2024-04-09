@@ -26,11 +26,19 @@ class MapPage extends StatelessWidget {
       ),
       body: Center(
         child: FlutterMap(
-          options: const MapOptions(
-            initialCenter: LatLng(51.759247, 19.455982),
+          options: MapOptions(
+            cameraConstraint: CameraConstraint.contain(bounds: LatLngBounds(
+              const LatLng(49.002, 14.122), // Południowo-Zachodni punkt Polski
+              const LatLng(54.838, 24.145), // Północno-Wschodni punkt Polski
+            ),),
+            minZoom: 7,
+            maxZoom: 20,
+            initialCenter: const LatLng(51.759247, 19.455982),
             initialZoom: 13.2,
-            interactionOptions: InteractionOptions(
-              flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.pinchMove,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.pinchZoom |
+                  InteractiveFlag.drag |
+                  InteractiveFlag.pinchMove,
             ),
           ),
           children: [

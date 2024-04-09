@@ -12,7 +12,8 @@ class CalendarPage extends StatelessWidget {
         child: TableCalendar(
           availableCalendarFormats: const {CalendarFormat.month: 'xd'},
           calendarStyle: const CalendarStyle(
-            todayDecoration: BoxDecoration(color: orange, shape: BoxShape.circle),
+            todayDecoration:
+                BoxDecoration(color: orange, shape: BoxShape.circle),
             tableBorder: TableBorder(
                 // horizontalInside: BorderSide(color: Colors.black),
                 // verticalInside: BorderSide(color: Colors.black),

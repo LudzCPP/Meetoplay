@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meetoplay/global_variables.dart';
 
 class FindMeetPage extends StatefulWidget {
-  const FindMeetPage({Key? key}) : super(key: key);
+  const FindMeetPage({super.key});
 
   @override
   _FindMeetPageState createState() => _FindMeetPageState();
@@ -38,7 +38,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
           children: [
             TextFormField(
               controller: _sportController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Sport',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(
@@ -48,12 +48,12 @@ class _FindMeetPageState extends State<FindMeetPage> {
                   borderSide: BorderSide(color: specialActionButtonColor),
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _cityController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Miasto',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(
@@ -63,12 +63,12 @@ class _FindMeetPageState extends State<FindMeetPage> {
                   borderSide: BorderSide(color: specialActionButtonColor),
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             DropdownButtonFormField<String>(
               value: _selectedLevel,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Poziom zaawansowania',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(
@@ -79,7 +79,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
                 ),
               ),
               dropdownColor: darkBlue,
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               items: _levels.map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -106,7 +106,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
               title: const Text("Wybierz datę", style: TextStyle(color: Colors.white)),
               subtitle: Text(
                 _selectedDate == null ? "Nie wybrano daty" : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
-                style: TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.white70),
               ),
               onTap: _pickDate,
             ),
@@ -114,7 +114,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
               title: const Text("Wybierz godzinę", style: TextStyle(color: Colors.white)),
               subtitle: Text(
                 _selectedTime == null ? "Nie wybrano godziny" : _selectedTime!.format(context),
-                style: TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.white70),
               ),
               onTap: _pickTime,
             ),
@@ -125,11 +125,11 @@ class _FindMeetPageState extends State<FindMeetPage> {
                   onPressed: () {
                     // Logika wyszukiwania
                   },
-                  child: const Text('Szukaj'),
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
                     foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
+                  child: const Text('Szukaj'),
                 ),
               ),
             ),
