@@ -7,6 +7,7 @@ import 'package:meetoplay/main_window_card.dart';
 import 'package:meetoplay/map_page.dart';
 import 'package:meetoplay/settings_page.dart';
 
+
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 

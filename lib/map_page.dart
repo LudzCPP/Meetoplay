@@ -29,6 +29,9 @@ class MapPage extends StatelessWidget {
           options: const MapOptions(
             initialCenter: LatLng(51.759247, 19.455982),
             initialZoom: 13.2,
+            interactionOptions: InteractionOptions(
+              flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag | InteractiveFlag.pinchMove,
+            ),
           ),
           children: [
             TileLayer(
