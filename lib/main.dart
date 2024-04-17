@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:meetoplay/home_page.dart';
-import 'global_variables.dart';
 
-void main() {
+import 'package:meetoplay/wrapper.dart';
+import 'global_variables.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();  // Upewnij się, że bindingi widgetów są inicjalizowane
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 
@@ -34,7 +42,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: lightBlue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: AuthWrapper(),
     );
   }
 }

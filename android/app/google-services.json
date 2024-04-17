@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "527654279314",
+    "project_id": "meetoplay-91a7d",
+    "storage_bucket": "meetoplay-91a7d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:527654279314:android:024c149a56ff11a1d2ee4b",
+        "android_client_info": {
+          "package_name": "com.sumy.meetoplay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDr93mJ9McRMqPS86CD3BnxWzJvbXsr3Aw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
