@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:meetoplay/authenticate_page.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/wrapper.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -21,8 +24,20 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
       ),
-      body: const Center(
-        child: Text('PROFIL'),
+      body: Center(
+        child: Column(
+          children: [
+            ElevatedButton(onPressed: () async{
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => AuthWrapper()),
+                  (Route<dynamic> route) => false,
+                );
+            },
+            child: Text('Wyloguj'),),
+
+          ],
+        ),
       ),
     );
   }
