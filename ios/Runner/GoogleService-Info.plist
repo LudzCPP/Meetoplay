@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>527654279314-tha3r88t7d74091l9lv1lhmam9ok02aa.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.527654279314-tha3r88t7d74091l9lv1lhmam9ok02aa</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>527654279314-esmqbjff3c7bhv4aq7k1to60tp23d0ic.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCKnGeeCT0nBZfTAfy4tQmiG_34OFqE5KA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>527654279314</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.meetoplay</string>
+	<key>PROJECT_ID</key>
+	<string>meetoplay-91a7d</string>
+	<key>STORAGE_BUCKET</key>
+	<string>meetoplay-91a7d.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:527654279314:ios:50a7bed4568f8a86d2ee4b</string>
+</dict>
+</plist>

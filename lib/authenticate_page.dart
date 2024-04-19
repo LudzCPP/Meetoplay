@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({super.key});
@@ -11,6 +12,7 @@ class AuthenticationScreen extends StatefulWidget {
 
 class _AuthenticationScreenState extends State<AuthenticationScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -49,6 +51,21 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleSignInAuthentication.accessToken,
+        idToken: googleSignInAuthentication.idToken,
+      );
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      Fluttertoast.showToast(msg: "Zalogowano przez Google: ${userCredential.user!.email}");
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Błąd logowania przez Google: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,14 +78,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               controller: _emailController,
               decoration: const InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.white)),
+                  labelStyle: TextStyle(color: Colors.black)),
             ),
             TextField(
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
                   labelText: 'Hasło',
-                  labelStyle: TextStyle(color: Colors.white)),
+                  labelStyle: TextStyle(color: Colors.black)),
             ),
             const SizedBox(height: 30),
             ElevatedButton(
@@ -79,10 +96,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               onPressed: _signInAnonymously,
               child: const Text('Kontynuuj bez logowania'),
             ),
-            const SizedBox(height: 20,),
             ElevatedButton(
               onPressed: _registerWithEmail,
               child: const Text('Rejestracja przez email'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _signInWithGoogle,
+              child: const Text('Zaloguj przez Google'),
             ),
           ],
         ),

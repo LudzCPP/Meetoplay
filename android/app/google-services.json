@@ -12,7 +12,20 @@
           "package_name": "com.sumy.meetoplay"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "527654279314-esmqbjff3c7bhv4aq7k1to60tp23d0ic.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sumy.meetoplay",
+            "certificate_hash": "6e51d4f88a3cced1a0d81e960bb0875e9f7dd9fb"
+          }
+        },
+        {
+          "client_id": "527654279314-dkv0so3hlm1eqc11sacetm7gt94qvvio.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDr93mJ9McRMqPS86CD3BnxWzJvbXsr3Aw"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "527654279314-dkv0so3hlm1eqc11sacetm7gt94qvvio.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "527654279314-tha3r88t7d74091l9lv1lhmam9ok02aa.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.meetoplay"
+              }
+            }
+          ]
         }
       }
     }
