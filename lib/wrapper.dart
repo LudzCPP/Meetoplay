@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:meetoplay/authenticate_page.dart';
 import 'package:meetoplay/home_page.dart';
 
-
 class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -13,23 +14,24 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           User? user = snapshot.data;
           if (user == null) {
-            return AuthenticationScreen();
+            return const AuthenticationScreen();
           } else {
             FirebaseAuth.instance.idTokenChanges().listen((User? user) async {
               if (user != null) {
                 try {
                   await user.reload();
                 } catch (e) {
-                  if (e is FirebaseAuthException && e.code == 'user-not-found') {
+                  if (e is FirebaseAuthException &&
+                      e.code == 'user-not-found') {
                     await FirebaseAuth.instance.signOut();
                   }
                 }
               }
             });
-            return HomePage();
+            return const HomePage();
           }
         } else {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),

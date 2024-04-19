@@ -12,7 +12,11 @@ class _FindMeetPageState extends State<FindMeetPage> {
   final TextEditingController _sportController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
   String? _selectedLevel;
-  final List<String> _levels = ['Początkujący', 'Średniozaawansowany', 'Zaawansowany'];
+  final List<String> _levels = [
+    'Początkujący',
+    'Średniozaawansowany',
+    'Zaawansowany'
+  ];
   bool _areFreeSpotsAvailable = false;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
@@ -93,7 +97,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
               },
             ),
             SwitchListTile(
-              title: const Text('Dostępne miejsca', style: TextStyle(color: Colors.white)),
+              title: const Text('Dostępne miejsca',
+                  style: TextStyle(color: Colors.white)),
               value: _areFreeSpotsAvailable,
               onChanged: (bool value) {
                 setState(() {
@@ -103,17 +108,23 @@ class _FindMeetPageState extends State<FindMeetPage> {
               activeColor: specialActionButtonColor,
             ),
             ListTile(
-              title: const Text("Wybierz datę", style: TextStyle(color: Colors.white)),
+              title: const Text("Wybierz datę",
+                  style: TextStyle(color: Colors.white)),
               subtitle: Text(
-                _selectedDate == null ? "Nie wybrano daty" : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
+                _selectedDate == null
+                    ? "Nie wybrano daty"
+                    : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
                 style: const TextStyle(color: Colors.white70),
               ),
               onTap: _pickDate,
             ),
             ListTile(
-              title: const Text("Wybierz godzinę", style: TextStyle(color: Colors.white)),
+              title: const Text("Wybierz godzinę",
+                  style: TextStyle(color: Colors.white)),
               subtitle: Text(
-                _selectedTime == null ? "Nie wybrano godziny" : _selectedTime!.format(context),
+                _selectedTime == null
+                    ? "Nie wybrano godziny"
+                    : _selectedTime!.format(context),
                 style: const TextStyle(color: Colors.white70),
               ),
               onTap: _pickTime,
@@ -126,7 +137,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
                     // Logika wyszukiwania
                   },
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
+                    backgroundColor:
+                        MaterialStateProperty.all(specialActionButtonColor),
                     foregroundColor: MaterialStateProperty.all(Colors.white),
                   ),
                   child: const Text('Szukaj'),

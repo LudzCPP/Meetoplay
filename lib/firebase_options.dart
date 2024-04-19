@@ -85,5 +85,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'meetoplay-91a7d.appspot.com',
     measurementId: 'G-N9HCZGQN3R',
   );
-
 }

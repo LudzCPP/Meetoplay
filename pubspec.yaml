@@ -42,7 +42,11 @@ dependencies:
   cloud_firestore: ^4.17.0
   firebase_core: ^2.30.0
   fluttertoast: ^8.2.5
+<<<<<<< HEAD
   google_sign_in: ^6.2.1
+=======
+  flutter_map_marker_popup: ^6.1.2
+>>>>>>> 85891b3da9899f59af0078ee07262ae5221d8155
   
 
 

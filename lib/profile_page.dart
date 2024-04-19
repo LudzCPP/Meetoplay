@@ -27,15 +27,16 @@ class ProfilePage extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            ElevatedButton(onPressed: () async{
-              await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => AuthWrapper()),
+            ElevatedButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthWrapper()),
                   (Route<dynamic> route) => false,
                 );
-            },
-            child: Text('Wyloguj'),),
-
+              },
+              child: const Text('Wyloguj'),
+            ),
           ],
         ),
       ),
