@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/home_page.dart';
 import 'package:meetoplay/meet_marker.dart';
+import 'package:meetoplay/menu_page.dart';
 
 class CreateMeetPage extends StatefulWidget {
   const CreateMeetPage({super.key});
@@ -29,6 +31,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
   void _handleTap(TapPosition, LatLng latlng) {
     setState(() {
+      latlng = LatLng(latlng.latitude + 0.0028, latlng.longitude - 0.0014);
       _selectedLocation = latlng;
       print(_selectedLocation);
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
@@ -176,13 +179,48 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        setState(() {
-                          globalMarkers.add(MeetMarker(
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return Dialog(
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
+                                child: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 20),
+                                    Text('Trwa dodawanie spotkania...'),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+
+                        Future.delayed(const Duration(seconds: 2), () {
+                          setState(() {
+                            globalMarkers.add(MeetMarker(
                               location: _selectedLocation,
                               tooltipMessage: _eventNameController.text,
-                              color: Colors.red));
+                              color: Colors.red,
+                            ));
+                          });
+
+                          Navigator.of(context)
+                              .pop();
+                          Navigator.of(context).popUntil((route) =>
+                              route.isFirst);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Spotkanie zostało dodane!'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
                         });
-                        Navigator.of(context).pop();
                       }
                     },
                     style: ButtonStyle(
