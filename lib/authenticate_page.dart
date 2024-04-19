@@ -34,7 +34,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      Fluttertoast.showToast(msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
+      Fluttertoast.showToast(
+          msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd rejestracji: $e");
     }
@@ -43,7 +44,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   void _signInAnonymously() async {
     try {
       final UserCredential userCredential = await _auth.signInAnonymously();
-      Fluttertoast.showToast(msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
+      Fluttertoast.showToast(
+          msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania anonimowego: $e");
     }
@@ -53,7 +55,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Meetoplay")),
-      body: SingleChildScrollView( 
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: <Widget>[
@@ -79,7 +81,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               onPressed: _signInAnonymously,
               child: const Text('Kontynuuj bez logowania'),
             ),
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             ElevatedButton(
               onPressed: _registerWithEmail,
               child: const Text('Rejestracja przez email'),

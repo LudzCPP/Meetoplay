@@ -27,10 +27,13 @@ class MapPage extends StatelessWidget {
       body: Center(
         child: FlutterMap(
           options: MapOptions(
-            cameraConstraint: CameraConstraint.contain(bounds: LatLngBounds(
-              const LatLng(49.002, 14.122), // Południowo-Zachodni punkt Polski
-              const LatLng(54.838, 24.145), // Północno-Wschodni punkt Polski
-            ),),
+            cameraConstraint: CameraConstraint.contain(
+              bounds: LatLngBounds(
+                const LatLng(
+                    49.002, 14.122), // Południowo-Zachodni punkt Polski
+                const LatLng(54.838, 24.145), // Północno-Wschodni punkt Polski
+              ),
+            ),
             minZoom: 7,
             maxZoom: 20,
             initialCenter: const LatLng(51.759247, 19.455982),
@@ -45,6 +48,9 @@ class MapPage extends StatelessWidget {
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.example.app',
+            ),
+            MarkerLayer(
+              markers: globalMarkers,
             ),
           ],
         ),
