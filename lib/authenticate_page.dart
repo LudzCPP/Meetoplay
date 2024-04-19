@@ -98,12 +98,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               onPressed: _signInAnonymously,
               child: const Text('Kontynuuj bez logowania'),
             ),
-<<<<<<< HEAD
-=======
             const SizedBox(
               height: 20,
             ),
->>>>>>> 85891b3da9899f59af0078ee07262ae5221d8155
             ElevatedButton(
               onPressed: _registerWithEmail,
               child: const Text('Rejestracja przez email'),

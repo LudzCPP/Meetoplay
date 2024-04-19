@@ -30,6 +30,7 @@ class ProfilePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
+                if (!context.mounted) return;
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const AuthWrapper()),
                   (Route<dynamic> route) => false,
