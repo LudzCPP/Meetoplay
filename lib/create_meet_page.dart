@@ -42,10 +42,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
       _temporaryMarker = Marker(
         point: latlng,
-        width: 50,  // Szerokość ikony
-        height: 50,  // Wysokość ikony
         child: Transform.translate(
-          offset: const Offset(0, -20), // Przesunięcie o połowę szerokości i całą wysokość w górę
+          offset: const Offset(-8, -32), // Przesunięcie o połowę szerokości i całą wysokość w górę
           child: const Icon(
             Icons.location_on,
             color: Colors.blue,
