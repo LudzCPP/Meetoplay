@@ -14,6 +14,7 @@ class CreateMeetPage extends StatefulWidget {
 }
 
 class _CreateMeetPageState extends State<CreateMeetPage> {
+  final MapController _mapController = MapController();
   final _formKey = GlobalKey<FormState>();
   final GlobalKey _mapKey = GlobalKey();
   final TextEditingController _eventNameController = TextEditingController();
@@ -31,20 +32,26 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
   void _handleTap(TapPosition, LatLng latlng) {
     setState(() {
-      latlng = LatLng(latlng.latitude + 0.0028, latlng.longitude - 0.0014);
+      latlng = LatLng(latlng.latitude, latlng.longitude);
       _selectedLocation = latlng;
       print(_selectedLocation);
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
       _temporaryMarker = Marker(
         point: latlng,
-        child: const Icon(
-          Icons.location_on,
-          color: Colors.blue,
-          size: 50,
+        width: 50,  // Szerokość ikony
+        height: 50,  // Wysokość ikony
+        child: Transform.translate(
+          offset: const Offset(0, -20), // Przesunięcie o połowę szerokości i całą wysokość w górę
+          child: const Icon(
+            Icons.location_on,
+            color: Colors.blue,
+            size: 50,
+          ),
         ),
       );
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +211,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           setState(() {
                             globalMarkers.add(MeetMarker(
                               location: _selectedLocation,
-                              tooltipMessage: _eventNameController.text,
+                              eventTitle: _eventNameController.text,
+                              tooltipMessage: "Opis",
                               color: Colors.red,
                             ));
                           });
