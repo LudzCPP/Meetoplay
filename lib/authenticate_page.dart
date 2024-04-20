@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -15,6 +16,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  
+  final FirebaseFirestore _firestore= FirebaseFirestore.instance;
+  
 
   void _signInWithEmail() async {
     try {
@@ -67,6 +71,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       Fluttertoast.showToast(msg: "Błąd logowania przez Google: $e");
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

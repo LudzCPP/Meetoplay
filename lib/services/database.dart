@@ -7,11 +7,11 @@ class DatabaseService{
 
   final String uid;
   DatabaseService({required this.uid});
-  final CollectionReference appCollection = FirebaseFirestore.instance.collection('meetoplay');
+  final CollectionReference meetingsCollection = FirebaseFirestore.instance.collection('meetings');
 
 
 Future updateMeeting(String eventName, double latitude, double longitude, String date) async {
-  return await appCollection.doc().set({
+  return await meetingsCollection.doc().set({
     'user_id': uid,
     'eventName': eventName,
     'location': {
@@ -20,5 +20,8 @@ Future updateMeeting(String eventName, double latitude, double longitude, String
     },
     'date': date,
   });
+}
+Stream<QuerySnapshot> get meetings {
+  return meetingsCollection.snapshots();
 }
 }
