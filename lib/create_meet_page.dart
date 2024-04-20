@@ -1,3 +1,6 @@
+//import 'dart:js_interop';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -5,6 +8,7 @@ import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/home_page.dart';
 import 'package:meetoplay/meet_marker.dart';
 import 'package:meetoplay/menu_page.dart';
+import 'package:meetoplay/services/database.dart';
 
 class CreateMeetPage extends StatefulWidget {
   const CreateMeetPage({super.key});
@@ -216,6 +220,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                               color: Colors.red,
                             ));
                           });
+
+                          DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).updateMeeting(_eventNameController.text, _selectedLocation.latitude,_selectedLocation.longitude, _dateController.text);
 
                           Navigator.of(context)
                               .pop();

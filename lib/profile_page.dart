@@ -38,6 +38,7 @@ class ProfilePage extends StatelessWidget {
               },
               child: const Text('Wyloguj'),
             ),
+            Text(FirebaseAuth.instance.currentUser!.displayName.toString())
           ],
         ),
       ),
