@@ -56,7 +56,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<Marker> markersToShow = List.from(globalMarkers);
+    // List<Marker> markersToShow = List.from(globalMarkers);
+    List<Marker> markersToShow = [];
     markersToShow.add(_temporaryMarker);
 
     return Scaffold(
@@ -213,7 +214,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                             globalMarkers.add(MeetMarker(
                               location: _selectedLocation,
                               eventTitle: _eventNameController.text,
-                              tooltipMessage: "Opis",
+                              eventDescription: "Opis",
                               color: Colors.red,
                             ));
                           });

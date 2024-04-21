@@ -7,7 +7,7 @@ import 'package:meetoplay/meet_view.dart';
 class MeetMarker extends Marker {
   MeetMarker({
     required LatLng location,
-    required String tooltipMessage,
+    required String eventDescription,
     required Color color,
     required String eventTitle,
     double size = 50.0,
@@ -24,14 +24,14 @@ class MeetMarker extends Marker {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: Text(eventTitle),
-                    content: Text(tooltipMessage),
+                    content: Text(eventDescription),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) {
-                                return const MeetView();
+                                return MeetView(eventTitle: eventTitle, eventDescription: eventDescription,);
                               },
                             ),
                           );

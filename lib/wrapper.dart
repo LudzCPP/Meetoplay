@@ -47,12 +47,12 @@ class AuthWrapper extends StatelessWidget {
                     LatLng position = LatLng(data['location']['latitude'], data['location']['longitude']);
                     globalMarkers.add(MeetMarker(
                       location: position,
-                      tooltipMessage: "Event at ${data['date']}",
+                      eventDescription: "Event at ${data['date']}",
                       color: Colors.blue, // Example: dynamic color based on data
                       eventTitle: data['eventName'],
                     ));
                   }
-                  return HomePage(); // Or any widget that uses globalMarkers
+                  return const HomePage(); // Or any widget that uses globalMarkers
                 } else if (snapshot.hasError) {
                   return Scaffold(
                     body: Center(
