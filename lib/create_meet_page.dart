@@ -41,19 +41,18 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       print(_selectedLocation);
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
       _temporaryMarker = Marker(
+        width: 50,
+          height: 50,
+        alignment: const Alignment(0, -0.9),
         point: latlng,
-        child: Transform.translate(
-          offset: const Offset(-8, -32), // Przesunięcie o połowę szerokości i całą wysokość w górę
-          child: const Icon(
-            Icons.location_on,
-            color: Colors.blue,
-            size: 50,
-          ),
+        child: const Icon(
+          Icons.location_on,
+          color: Colors.blue,
+          size: 50,
         ),
       );
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -221,8 +220,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
                           DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).updateMeeting(_eventNameController.text, _selectedLocation.latitude,_selectedLocation.longitude, _dateController.text);
 
-                          Navigator.of(context)
-                              .pop();
+                          Navigator.of(context).pop();
                           Navigator.of(context).popUntil((route) =>
                               route.isFirst);
 
