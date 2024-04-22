@@ -22,7 +22,7 @@ class MenuPage extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
-                      return const MapPage();
+                      return MapPage();
                     },
                   ),
                 );

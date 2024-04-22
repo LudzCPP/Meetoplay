@@ -1,5 +1,7 @@
 //import 'dart:js_interop';
 
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -38,7 +40,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     setState(() {
       latlng = LatLng(latlng.latitude, latlng.longitude);
       _selectedLocation = latlng;
-      print(_selectedLocation);
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
       _temporaryMarker = Marker(
         width: 50,
@@ -52,6 +53,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
         ),
       );
     });
+    
   }
 
   @override
@@ -59,7 +61,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     // List<Marker> markersToShow = List.from(globalMarkers);
     List<Marker> markersToShow = [];
     markersToShow.add(_temporaryMarker);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('DODAJ SPOTKANIE'),

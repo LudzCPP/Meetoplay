@@ -4,8 +4,15 @@ import 'package:meetoplay/global_variables.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-class MapPage extends StatelessWidget {
-  const MapPage({super.key});
+class MapPage extends StatefulWidget {
+const MapPage({super.key});
+
+  @override
+  State<MapPage> createState() => _MapPageState();
+}
+
+class _MapPageState extends State<MapPage> {
+final MapController mapController = MapController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +33,7 @@ class MapPage extends StatelessWidget {
       ),
       body: Center(
         child: FlutterMap(
+          mapController: mapController,
           options: MapOptions(
             cameraConstraint: CameraConstraint.contain(
               bounds: LatLngBounds(
@@ -58,6 +66,7 @@ class MapPage extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          print(mapController.camera.visibleBounds.east.toString());
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) {
