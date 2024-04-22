@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
+import 'package:meetoplay/models/meetings.dart';
   
 List<Marker> globalMarkers = [];
+List<Meeting> globalMeetings = [];
 
 const orange = Color(0xffff6b35);
 const pink = Color(0xfff7c59f);

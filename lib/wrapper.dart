@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/main.dart'; // Ensure navigatorKey is defined here
+import 'package:meetoplay/models/meetings.dart';
 import 'global_variables.dart';
 import 'meet_marker.dart';
 
@@ -38,21 +39,31 @@ class AuthWrapper extends StatelessWidget {
 
             // Fetch user-specific data from Firestore and update global markers
             return StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('meetings').where('user_id', isEqualTo: user.uid).snapshots(),
+              //stream: FirebaseFirestore.instance.collection('meetings').where('userId', isEqualTo: user.uid).snapshots(),
+              stream: FirebaseFirestore.instance.collection('meetings').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   globalMarkers.clear(); // Clear existing markers before updating
                   for (var doc in snapshot.data!.docs) {
                     var data = doc.data() as Map<String, dynamic>;
-                    LatLng position = LatLng(data['location']['latitude'], data['location']['longitude']);
-                    globalMarkers.add(MeetMarker(
-                      location: position,
+                    LatLng location = LatLng(data['location']['latitude'], data['location']['longitude']);
+                    globalMeetings.add(Meeting(location: location, date: data['date'], eventName: data['eventName'], userId: data['userId']));
+                    if(data['userId']==user.uid){ globalMarkers.add(MeetMarker(
+                      location: location,
+                      eventDescription: "Event at ${data['date']}",
+                      color: Colors.red, // Example: dynamic color based on data
+                      eventTitle: data['eventName'],
+                    ));}
+                    else{
+                       globalMarkers.add(MeetMarker(
+                      location: location,
                       eventDescription: "Event at ${data['date']}",
                       color: Colors.blue, // Example: dynamic color based on data
                       eventTitle: data['eventName'],
                     ));
+                    }
                   }
-                  return const HomePage(); // Or any widget that uses globalMarkers
+                  return const HomePage(); 
                 } else if (snapshot.hasError) {
                   return Scaffold(
                     body: Center(

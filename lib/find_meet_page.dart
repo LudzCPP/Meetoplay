@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:meetoplay/global_variables.dart';
 
@@ -20,6 +21,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
   bool _areFreeSpotsAvailable = false;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  Stream<QuerySnapshot>? _meetingsStream;
 
   @override
   Widget build(BuildContext context) {
@@ -129,13 +131,12 @@ class _FindMeetPageState extends State<FindMeetPage> {
               ),
               onTap: _pickTime,
             ),
+            
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 32.0),
               child: Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Logika wyszukiwania
-                  },
+                  onPressed: searchMeetings,
                   style: ButtonStyle(
                     backgroundColor:
                         MaterialStateProperty.all(specialActionButtonColor),
@@ -144,6 +145,33 @@ class _FindMeetPageState extends State<FindMeetPage> {
                   child: const Text('Szukaj'),
                 ),
               ),
+            ),
+              
+             StreamBuilder<QuerySnapshot>(
+              stream: _meetingsStream,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+                if (snapshot.hasData) {
+                  return ListView(
+                    shrinkWrap: true,
+                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                      Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+                      return ListTile(
+                        title: Text(data['eventName'],
+                          style: const TextStyle(color: Colors.white),),
+                        subtitle: Text(data['userId'],
+                          style: const TextStyle(color: Colors.white70),),
+                      );
+                    }).toList(),
+                  );
+                }
+                return const Text('No results found');
+              },
             ),
           ],
         ),
@@ -159,9 +187,11 @@ class _FindMeetPageState extends State<FindMeetPage> {
       lastDate: DateTime(2025),
     );
     if (pickedDate != null && pickedDate != _selectedDate) {
+      
       setState(() {
         _selectedDate = pickedDate;
       });
+      
     }
   }
 
@@ -175,6 +205,29 @@ class _FindMeetPageState extends State<FindMeetPage> {
         _selectedTime = pickedTime;
       });
     }
+  }
+
+  void searchMeetings() {
+    Query query = FirebaseFirestore.instance.collection('meetings');
+    if (_sportController.text.isNotEmpty) {
+      query = query.where('sport', isEqualTo: _sportController.text);
+    }
+    if (_cityController.text.isNotEmpty) {
+      query = query.where('city', isEqualTo: _cityController.text);
+    }
+    if (_selectedLevel != null) {
+      query = query.where('level', isEqualTo: _selectedLevel);
+    }
+    if (_areFreeSpotsAvailable) {
+      query = query.where('spotsAvailable', isEqualTo: true);
+    }
+    if (_selectedDate != null) {
+      query = query.where('date', isEqualTo: "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}");
+    }
+
+    setState(() {
+      _meetingsStream = query.snapshots();
+    });
   }
 
   @override

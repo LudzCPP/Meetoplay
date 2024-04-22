@@ -12,7 +12,7 @@ class DatabaseService{
 
 Future updateMeeting(String eventName, double latitude, double longitude, String date) async {
   return await meetingsCollection.doc().set({
-    'user_id': uid,
+    'userId': uid,
     'eventName': eventName,
     'location': {
       'latitude': latitude,
