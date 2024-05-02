@@ -1,11 +1,43 @@
 import 'package:latlong2/latlong.dart';
 
-class Meeting{
-Meeting({
-    required LatLng location,
-    required String date,
-    required String eventName,
-    required String userId
-  });
+class Meeting {
+  String name;
+  LatLng location;
+  String date;
+  String time;
+  String category;
+  String skillLevel;
+  int participantsCount;
+  int registeredCount;
+  int waitListCount;
+  String organizerName;
+  double organizerRating;
+  List<Participant> participants;
+  String userId;
 
+  Meeting({
+    required this.name,
+    required this.location,
+    required this.date,
+    required this.time,
+    required this.category,
+    required this.skillLevel,
+    required this.participantsCount,
+    required this.registeredCount,
+    required this.waitListCount,
+    required this.organizerName,
+    required this.organizerRating,
+    required this.participants,
+    required this.userId,
+  });
+}
+
+class Participant {
+  String name;
+  int rating;
+
+  Participant({
+    required this.name,
+    required this.rating,
+  });
 }

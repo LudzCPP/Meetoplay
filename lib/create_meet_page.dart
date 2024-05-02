@@ -1,7 +1,4 @@
-//import 'dart:js_interop';
-
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -22,10 +19,14 @@ class CreateMeetPage extends StatefulWidget {
 class _CreateMeetPageState extends State<CreateMeetPage> {
   final MapController _mapController = MapController();
   final _formKey = GlobalKey<FormState>();
-  final GlobalKey _mapKey = GlobalKey();
   final TextEditingController _eventNameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
+  final TextEditingController _skillLevelController = TextEditingController();
+  final TextEditingController _participantsCountController = TextEditingController();
+  final TextEditingController _registeredCountController = TextEditingController();
+  final TextEditingController _waitListCountController = TextEditingController();
   LatLng _selectedLocation = const LatLng(0, 0);
   Marker _temporaryMarker = const Marker(
     point: LatLng(0, 0),
@@ -34,7 +35,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       color: Colors.blue,
       size: 0,
     ),
-  ); // Tymczasowy marker
+  ); // Temporary marker
 
   void _handleTap(TapPosition, LatLng latlng) {
     setState(() {
@@ -43,7 +44,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
       _temporaryMarker = Marker(
         width: 50,
-          height: 50,
+        height: 50,
         alignment: const Alignment(0, -0.9),
         point: latlng,
         child: const Icon(
@@ -53,14 +54,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
         ),
       );
     });
-    
   }
 
   @override
   Widget build(BuildContext context) {
-    // List<Marker> markersToShow = List.from(globalMarkers);
-    List<Marker> markersToShow = [];
-    markersToShow.add(_temporaryMarker);
     return Scaffold(
       appBar: AppBar(
         title: const Text('DODAJ SPOTKANIE'),
@@ -102,42 +99,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                height: 300,
-                child: FlutterMap(
-                  options: MapOptions(
-                    cameraConstraint: CameraConstraint.contain(
-                      bounds: LatLngBounds(
-                        const LatLng(49.002, 14.122),
-                        const LatLng(54.838, 24.145),
-                      ),
-                    ),
-                    minZoom: 7,
-                    maxZoom: 20,
-                    initialCenter: const LatLng(51.759247, 19.455982),
-                    initialZoom: 13.2,
-                    interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.pinchZoom |
-                          InteractiveFlag.drag |
-                          InteractiveFlag.pinchMove,
-                    ),
-                    onTap: _handleTap,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.app',
-                    ),
-                    MarkerLayer(markers: markersToShow),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
               TextFormField(
-                controller: _dateController,
+                controller: _categoryController,
                 decoration: const InputDecoration(
-                  labelText: 'Data',
+                  labelText: 'Kategoria sportu',
                   labelStyle: TextStyle(color: Colors.white),
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white),
@@ -149,101 +114,97 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 style: const TextStyle(color: Colors.white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Proszę wpisać datę wydarzenia';
+                    return 'Proszę wybrać kategorię sportu';
+                  }
+                  return null;
+
+                },
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _skillLevelController,
+                decoration: const InputDecoration(
+                  labelText: 'Poziom zaawansowania',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wybrać poziom zaawansowania';
                   }
                   return null;
                 },
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2025),
-                    builder: (context, child) {
-                      return Theme(
-                        data: ThemeData.dark().copyWith(
-                          colorScheme: const ColorScheme.dark(
-                            primary: specialActionButtonColor,
-                            onPrimary: Colors.white,
-                            surface: lightBlue,
-                            onSurface: Colors.white,
-                          ),
-                          dialogBackgroundColor: darkBlue,
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (pickedDate != null) {
-                    String formattedDate =
-                        "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
-                    setState(() {
-                      _dateController.text = formattedDate;
-                    });
-                  }
-                },
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32.0),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (BuildContext context) {
-                            return Dialog(
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 20),
-                                child: const Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 20),
-                                    Text('Trwa dodawanie spotkania...'),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-
-                        Future.delayed(const Duration(seconds: 2), () {
-                          setState(() {
-                            globalMarkers.add(MeetMarker(
-                              location: _selectedLocation,
-                              eventTitle: _eventNameController.text,
-                              eventDescription: "Opis",
-                              color: Colors.red,
-                            ));
-                          });
-
-                          DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).updateMeeting(_eventNameController.text, _selectedLocation.latitude,_selectedLocation.longitude, _dateController.text);
-
-                          Navigator.of(context).pop();
-                          Navigator.of(context).popUntil((route) =>
-                              route.isFirst);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Spotkanie zostało dodane!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        });
-                      }
-                    },
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(specialActionButtonColor),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                    ),
-                    child: const Text('Dodaj spotkanie'),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _participantsCountController,
+                decoration: const InputDecoration(
+                  labelText: 'Maksymalna liczba uczestników',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wprowadzić maksymalną liczbę uczestników';
+                  }
+                  return null;
+                },
               ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _registeredCountController,
+                decoration: const InputDecoration(
+                  labelText: 'Liczba zarejestrowanych uczestników',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wprowadzić liczbę zarejestrowanych uczestników';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _waitListCountController,
+                decoration: const InputDecoration(
+                  labelText: 'Liczba osób na liście rezerwowej',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wprowadzić liczbę osób na liście rezerwowej';
+                  }
+                  return null;
+                },
+              ),
+              // Additional form fields and logic as needed
             ],
           ),
         ),
@@ -256,6 +217,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     _eventNameController.dispose();
     _locationController.dispose();
     _dateController.dispose();
+    _categoryController.dispose();
+    _skillLevelController.dispose();
+    _participantsCountController.dispose();
+    _registeredCountController.dispose();
+    _waitListCountController.dispose();
     super.dispose();
   }
 }
