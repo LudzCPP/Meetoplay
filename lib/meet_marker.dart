@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/main.dart';
 import 'package:meetoplay/event_details_page.dart';
 
+
 class MeetMarker extends Marker {
   MeetMarker({
     required LatLng location,
