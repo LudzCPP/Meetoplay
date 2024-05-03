@@ -1,14 +1,16 @@
+import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:meetoplay/models/meetings.dart'; 
-import 'package:meetoplay/meet_marker.dart';
 import 'package:meetoplay/global_variables.dart';
-import 'package:meetoplay/event_details_page.dart';
-
+import 'package:meetoplay/home_page.dart';
+import 'package:meetoplay/meet_marker.dart';
+import 'package:meetoplay/menu_page.dart';
+import 'package:meetoplay/services/database.dart';
 
 class CreateMeetPage extends StatefulWidget {
-  const CreateMeetPage({Key? key}) : super(key: key);
+  const CreateMeetPage({super.key});
 
   @override
   _CreateMeetPageState createState() => _CreateMeetPageState();
@@ -16,21 +18,38 @@ class CreateMeetPage extends StatefulWidget {
 
 class _CreateMeetPageState extends State<CreateMeetPage> {
   final MapController _mapController = MapController();
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _eventNameController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
-  final TextEditingController _skillLevelController = TextEditingController();
-  final TextEditingController _participantsCountController = TextEditingController();
-  final TextEditingController _registeredCountController = TextEditingController();
-  final TextEditingController _waitListCountController = TextEditingController();
-  final TextEditingController _organizerNameController = TextEditingController();
-  final TextEditingController _organizerRatingController = TextEditingController();
-  LatLng _selectedLocation = LatLng(51.509865, -0.118092); // Default location
+  final TextEditingController _categoryController = TextEditingController(); // New field for sport category
+  final TextEditingController _skillLevelController = TextEditingController(); // New field for skill level
+  LatLng _selectedLocation = const LatLng(0, 0);
+  Marker _temporaryMarker = const Marker(
+    point: LatLng(0, 0),
+    child: Icon(
+      Icons.location_on,
+      color: Colors.blue,
+      size: 0,
+    ),
+  ); // Temporary marker
 
-  void _handleTap(LatLng latlng) {
+  void _handleTap(TapPosition, LatLng latlng) {
     setState(() {
+      latlng = LatLng(latlng.latitude, latlng.longitude);
       _selectedLocation = latlng;
+      _locationController.text = '${latlng.latitude}, ${latlng.longitude}';
+      _temporaryMarker = Marker(
+        width: 50,
+        height: 50,
+        alignment: const Alignment(0, -0.9),
+        point: latlng,
+        child: const Icon(
+          Icons.location_on,
+          color: Colors.blue,
+          size: 50,
+        ),
+      );
     });
   }
 
@@ -51,122 +70,122 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: _eventNameController,
-              decoration: const InputDecoration(labelText: 'Nazwa wydarzenia'),
-            ),
-            SizedBox(height: 20),
-            Container(
-              height: 300,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              TextFormField(
+                controller: _eventNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nazwa wydarzenia',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wpisać nazwę wydarzenia';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Field for category
+              TextFormField(
+                controller: _categoryController,
+                decoration: const InputDecoration(
+                  labelText: 'Kategoria sportu',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wybrać kategorię sportu';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              Center(
               child: FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
-                  center: _selectedLocation,
-                  zoom: 13.0,
-                  onTap: (_, latlng) => _handleTap(latlng),
+                  cameraConstraint: CameraConstraint.contain(
+                    bounds: LatLngBounds(
+                      const LatLng(49.002, 14.122), // South-West corner of Poland
+                      const LatLng(54.838, 24.145), // North-East corner of Poland
+                    ),
+                  ),
+                  minZoom: 7,
+                  maxZoom: 20,
+                  initialCenter: const LatLng(51.759247, 19.455982),
+                  initialZoom: 13.2,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.pinchZoom |
+                        InteractiveFlag.drag |
+                        InteractiveFlag.pinchMove,
+                  ),
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.app',
                   ),
                   MarkerLayer(
-                    markers: [
-                      MeetMarker(
-                        location: _selectedLocation,
-                        meeting: Meeting(
-                          name: _eventNameController.text.isEmpty ? 'New Event' : _eventNameController.text,
-                          location: _selectedLocation,
-                          date: '2024-05-02',  // Example date
-                          time: '15:00',  // Example time
-                          category: 'Sports',
-                          skillLevel: 'Beginner',
-                          participantsCount: 10,
-                          registeredCount: 5,
-                          waitListCount: 2,
-                          organizerName: 'John Doe',
-                          organizerRating: 4.5,
-                          participants: [],  // This should be handled according to your app's logic
-                          userId: 'UserID'  // Adjust as necessary
-                        ),
-                        color: Colors.red,
-                        size: 50.0,
-                      ),
-                    ],
+                    markers: globalMarkers, // Ensure `globalMarkers` is defined
                   ),
                 ],
               ),
             ),
-            ElevatedButton(
-              onPressed: () => submitData(context),
-              child: Text('Submit Meeting')
-            ),
-          ],
+            const SizedBox(height: 20),
+              // Field for skill level
+              TextFormField(
+                controller: _skillLevelController,
+                decoration: const InputDecoration(
+                  labelText: 'Poziom zaawansowania',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wybrać poziom zaawansowania';
+                  }
+                  return null;
+                },
+              ),
+              // Continue with existing widgets and add new functionalities
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Meeting createMeeting() {
-    return Meeting(
-      name: _eventNameController.text,
-      location: _selectedLocation,
-      date: _dateController.text,
-      time: _timeController.text,
-      category: _categoryController.text,
-      skillLevel: _skillLevelController.text,
-      participantsCount: int.tryParse(_participantsCountController.text) ?? 0,
-      registeredCount: int.tryParse(_registeredCountController.text) ?? 0,
-      waitListCount: int.tryParse(_waitListCountController.text) ?? 0,
-      organizerName: _organizerNameController.text,
-      organizerRating: double.tryParse(_organizerRatingController.text) ?? 0.0,
-      participants: [],  // Here you would convert a list of participants if available
-      userId: 'userId'  // Assume this is fetched from your user management system
-    );
-  }
-
-  Widget buildTextField(TextEditingController controller, String label, {bool isNumeric = false}) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.blue),
-        ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.orange),
-        ),
-      ),
-      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter $label';
-        }
-        return null;
-      },
-    );
-  }
-
-  void submitData(BuildContext context) {
-    final meeting = createMeeting();
-    // Here you would typically send the meeting data to a server or database
-    Navigator.pop(context);  // Pop the context or navigate as necessary
   }
 
   @override
   void dispose() {
     _eventNameController.dispose();
+    _locationController.dispose();
     _dateController.dispose();
-    _timeController.dispose();
-    _categoryController.dispose();
-    _skillLevelController.dispose();
-    _participantsCountController.dispose();
-    _registeredCountController.dispose();
-    _waitListCountController.dispose();
-    _organizerNameController.dispose();
-    _organizerRatingController.dispose();
+    _categoryController.dispose(); // Dispose new controllers
+    _skillLevelController.dispose(); // Dispose new controllers
     super.dispose();
   }
 }
