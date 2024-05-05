@@ -13,7 +13,7 @@ class Meeting {
   String organizerName;
   double organizerRating;
   List<Participant> participants;
-  String userId;
+  String ownerId;
 
   Meeting({
     required this.name,
@@ -28,7 +28,7 @@ class Meeting {
     required this.organizerName,
     required this.organizerRating,
     required this.participants,
-    required this.userId,
+    required this.ownerId,
   });
 }
 

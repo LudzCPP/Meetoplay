@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:meetoplay/global_variables.dart';
 
+import 'models/meetings.dart';
+
 class EventDetailsPage extends StatelessWidget {
   final Meeting meeting;
 
@@ -71,36 +73,6 @@ class EventDetailsPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class Meeting {
-  String name;
-  String location;
-  String date;
-  String time;
-  String category; // Added category field
-  String skillLevel; // Added skill level field
-  int participantsCount;
-  int registeredCount;
-  int waitListCount;
-  String organizerName;
-  double organizerRating;
-  List<Participant> participants;
-
-  Meeting({
-    required this.name,
-    required this.location,
-    required this.date,
-    required this.time,
-    required this.category, // Initialize in constructor
-    required this.skillLevel, // Initialize in constructor
-    required this.participantsCount,
-    required this.registeredCount,
-    required this.waitListCount,
-    required this.organizerName,
-    required this.organizerRating,
-    required this.participants,
-  });
 }
 
 class Participant {

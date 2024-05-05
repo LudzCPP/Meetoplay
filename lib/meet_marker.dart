@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/main.dart';
 import 'package:meetoplay/event_details_page.dart';
+import 'package:meetoplay/models/meetings.dart';
 
 
 class MeetMarker extends Marker {
@@ -23,7 +24,7 @@ class MeetMarker extends Marker {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: Text(meeting.name),
-                    content: Text(meeting.location),
+                    content: Text(meeting.location.toString()),
                     actions: [
                       TextButton(
                         onPressed: () {

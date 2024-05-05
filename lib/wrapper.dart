@@ -47,19 +47,34 @@ class AuthWrapper extends StatelessWidget {
                   for (var doc in snapshot.data!.docs) {
                     var data = doc.data() as Map<String, dynamic>;
                     LatLng location = LatLng(data['location']['latitude'], data['location']['longitude']);
-                    globalMeetings.add(Meeting(location: location, date: data['date'], eventName: data['eventName'], userId: data['userId']));
-                    if(data['userId']==user.uid){ globalMarkers.add(MeetMarker(
+                    List<Participant> participants = [];
+                    for (var participant in data['participants']){
+                        participants.add(participant);
+                    };
+                    Meeting meeting = Meeting(name: data['name'],
+                    location: location, 
+                    date: data['date'], 
+                    time: data['time'],
+                    category: data['category'],
+                    skillLevel: data['skillLevel'],
+                    participantsCount: data['participantsCount'],
+                    registeredCount: data['registeredCount'],
+                    waitListCount: data['waitListCouunt'],
+                    organizerName: data['organizerName'],
+                    organizerRating: data['organizerRating'],
+                    participants: participants,
+                    ownerId: data['ownerId']);
+                    globalMeetings.add(meeting);
+                    if(data['owner']==user.uid){ globalMarkers.add(MeetMarker(
                       location: location,
-                      eventDescription: "Event at ${data['date']}",
+                      meeting: meeting,
                       color: Colors.red, // Example: dynamic color based on data
-                      eventTitle: data['eventName'],
                     ));}
                     else{
                        globalMarkers.add(MeetMarker(
                       location: location,
-                      eventDescription: "Event at ${data['date']}",
-                      color: Colors.blue, // Example: dynamic color based on data
-                      eventTitle: data['eventName'],
+                      meeting: meeting,
+                      color: Colors.blue,
                     ));
                     }
                   }
