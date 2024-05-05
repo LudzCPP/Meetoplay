@@ -24,6 +24,7 @@ Future updateMeeting(
   String organizerName,
   double organizerRating,
   List<Participant> participants,
+  String ownerId
 ) async {
   return await meetingsCollection.doc().set({
     'owner': uid,
@@ -45,7 +46,8 @@ Future updateMeeting(
       for ( var participant in participants){
         'participant': participant
       }
-    }
+    },
+    'ownerId': ownerId
   });
 }
 Stream<QuerySnapshot> get meetings {

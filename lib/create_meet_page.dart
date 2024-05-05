@@ -270,6 +270,20 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           participants: [],
                           ownerId: FirebaseAuth.instance.currentUser!.uid,
                         );
+                        DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).updateMeeting(_eventNameController.text,
+                          _selectedLocation,
+                          _dateController.text,
+                          _timeController.text,
+                          _categoryController.text,
+                          _skillLevelController.text,
+                           0,
+                           0,
+                           0,
+                           FirebaseAuth.instance.currentUser!.displayName ?? "Organizer",
+                           4.5, // Example rating
+                           [],
+                           FirebaseAuth.instance.currentUser!.uid,);
+
                         // Store new meeting in database or manage it locally
                         print("New Meeting Created: ${newMeeting.name}");
 
