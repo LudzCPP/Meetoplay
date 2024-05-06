@@ -5,7 +5,6 @@ import 'package:meetoplay/find_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/main_window_card.dart';
 import 'package:meetoplay/map_page.dart';
-import 'package:meetoplay/settings_page.dart';
 
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
@@ -22,7 +21,7 @@ class MenuPage extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
-                      return MapPage();
+                      return const MapPage();
                     },
                   ),
                 );
@@ -54,7 +53,7 @@ class MenuPage extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(flex: 2),
+            const Spacer(flex: 1),
             GestureDetector(
               onTap: () {
                 Navigator.of(context).push(
@@ -76,37 +75,68 @@ class MenuPage extends StatelessWidget {
               ),
             ),
             const Spacer(flex: 1),
-            // MainWindowCard(
-            //   cardText: 'EDYTUJ PROFIL',
-            //   cardHeight: 100,
-            //   cardIcon: Icon(
-            //     Icons.edit,
-            //     size: 63,
-            //     color: white,
-            //   ),
-            // ),
-            // SizedBox(height: 10),
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return const SettingsPage();
-                    },
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: GestureDetector(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xff1a659e),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(
+                            0.8),
+                        spreadRadius: 0,
+                        blurRadius: 6,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                );
-              },
-              child: const MainWindowCard(
-                cardText: 'OPCJE',
-                cardHeight: 110,
-                cardIcon: Icon(
-                  Icons.settings,
-                  size: 73,
-                  color: white,
+                  child: Column(
+                    children: [
+                      Text('Nadchodzące wydarzenie',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: const Color(0xffefefd0))), // white
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.event_note,
+                                size: 60, color: Color(0xffff6b35)), // orange
+                            const SizedBox(width: 20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Piknik rodzinny',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(color: const Color(0xffefefd0)), // white
+                                ),
+                                const Text(
+                                  '15 maja 2024',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xffefefd0), // white
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const Spacer(flex: 6),
+            const Spacer(flex: 2),
           ],
         ),
       ),
