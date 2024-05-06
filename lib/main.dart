@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Import potrzebny do zarządzania orientacją ekranu
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:meetoplay/wrapper.dart';
 import 'global_variables.dart';

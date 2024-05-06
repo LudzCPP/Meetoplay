@@ -31,6 +31,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   final TextEditingController _skillLevelController = TextEditingController(); // New
 
   String? _selectedLevel;
+  String? _selectedSport;
   LatLng _selectedLocation = const LatLng(0, 0);
   final List<String> _levels = [
     'Początkujący',
@@ -181,26 +182,40 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _categoryController,
-                decoration: const InputDecoration(
-                  labelText: 'Kategoria sportu',
-                  labelStyle: TextStyle(color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: specialActionButtonColor),
-                  ),
+              DropdownButtonFormField<String>(
+              value: _selectedSport,
+              decoration: const InputDecoration(
+                labelText: 'Wybierz sport',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
                 ),
-                style: const TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wybrać kategorię sportu';
-                  }
-                  return null;
-                },
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: specialActionButtonColor),
+                ),
               ),
+              dropdownColor: darkBlue,
+              style: const TextStyle(color: Colors.white),
+              items: sportsList.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedSport = newValue;
+                });
+              },
+              icon: const Icon(Icons.arrow_drop_down,
+                  color: Colors.white),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Proszę wybrać sport';
+                }
+                return null;
+              },
+            ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 itemHeight: 50,

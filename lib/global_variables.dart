@@ -14,3 +14,13 @@ const white = Color(0xffefefd0);
 const darkBlue = Color(0xff004e89);
 const lightBlue = Color(0xff1a659e);
 const specialActionButtonColor = Color(0xfffd5b28);
+
+const List<String> sportsList = [
+  'Piłka nożna',
+  'Koszykówka',
+  'Tenis',
+  'Siatkówka',
+  'Bieganie',
+  'Pływanie',
+  'Rowery',
+];

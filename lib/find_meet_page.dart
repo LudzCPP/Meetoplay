@@ -21,6 +21,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
   bool _areFreeSpotsAvailable = false;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
+  String? _selectedSport;
   Stream<QuerySnapshot>? _meetingsStream;
 
   @override
@@ -42,10 +43,10 @@ class _FindMeetPageState extends State<FindMeetPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextFormField(
-              controller: _sportController,
+            DropdownButtonFormField<String>(
+              value: _selectedSport,
               decoration: const InputDecoration(
-                labelText: 'Sport',
+                labelText: 'Wybierz sport',
                 labelStyle: TextStyle(color: Colors.white),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white),
@@ -54,7 +55,20 @@ class _FindMeetPageState extends State<FindMeetPage> {
                   borderSide: BorderSide(color: specialActionButtonColor),
                 ),
               ),
+              dropdownColor: darkBlue,
               style: const TextStyle(color: Colors.white),
+              items: sportsList.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedSport = newValue;
+                });
+              },
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
             ),
             const SizedBox(height: 20),
             TextFormField(
@@ -131,7 +145,6 @@ class _FindMeetPageState extends State<FindMeetPage> {
               ),
               onTap: _pickTime,
             ),
-            
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 32.0),
               child: Center(
@@ -146,8 +159,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
                 ),
               ),
             ),
-              
-             StreamBuilder<QuerySnapshot>(
+            StreamBuilder<QuerySnapshot>(
               stream: _meetingsStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -159,13 +171,19 @@ class _FindMeetPageState extends State<FindMeetPage> {
                 if (snapshot.hasData) {
                   return ListView(
                     shrinkWrap: true,
-                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+                    children:
+                        snapshot.data!.docs.map((DocumentSnapshot document) {
+                      Map<String, dynamic> data =
+                          document.data()! as Map<String, dynamic>;
                       return ListTile(
-                        title: Text(data['name'],
-                          style: const TextStyle(color: Colors.white),),
-                        subtitle: Text(data['ownerId'],
-                          style: const TextStyle(color: Colors.white70),),
+                        title: Text(
+                          data['name'],
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          data['ownerId'],
+                          style: const TextStyle(color: Colors.white70),
+                        ),
                       );
                     }).toList(),
                   );
@@ -187,11 +205,9 @@ class _FindMeetPageState extends State<FindMeetPage> {
       lastDate: DateTime(2025),
     );
     if (pickedDate != null && pickedDate != _selectedDate) {
-      
       setState(() {
         _selectedDate = pickedDate;
       });
-      
     }
   }
 
@@ -219,10 +235,13 @@ class _FindMeetPageState extends State<FindMeetPage> {
       query = query.where('skillLevel', isEqualTo: _selectedLevel);
     }
     if (_areFreeSpotsAvailable) {
-      query = query.where('participantsCount', isGreaterThan: 'registeredCount');
+      query =
+          query.where('participantsCount', isGreaterThan: 'registeredCount');
     }
     if (_selectedDate != null) {
-      query = query.where('date', isEqualTo: "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}");
+      query = query.where('date',
+          isEqualTo:
+              "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}");
     }
 
     setState(() {
