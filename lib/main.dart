@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart'; // Import potrzebny do zarządzania orientacją ekranu
+import 'package:firebase_core/firebase_core.dart';
 import 'package:meetoplay/wrapper.dart';
 import 'global_variables.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -12,6 +12,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   runApp(const MyApp());
 }
 
