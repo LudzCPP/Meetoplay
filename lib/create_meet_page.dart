@@ -30,7 +30,13 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   final TextEditingController _categoryController = TextEditingController(); // New
   final TextEditingController _skillLevelController = TextEditingController(); // New
 
+  String? _selectedLevel;
   LatLng _selectedLocation = const LatLng(0, 0);
+  final List<String> _levels = [
+    'Początkujący',
+    'Średniozaawansowany',
+    'Zaawansowany'
+  ];
   Marker _temporaryMarker = const Marker(
     point: LatLng(0, 0),
     child: Icon(
@@ -196,26 +202,33 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _skillLevelController,
-                decoration: const InputDecoration(
-                  labelText: 'Poziom zaawansowania',
-                  labelStyle: TextStyle(color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: specialActionButtonColor),
-                  ),
+              DropdownButtonFormField<String>(
+                itemHeight: 50,
+              value: _selectedLevel,
+              decoration: const InputDecoration(
+                labelText: 'Poziom zaawansowania',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
                 ),
-                style: const TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wybrać poziom zaawansowania';
-                  }
-                  return null;
-                },
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: specialActionButtonColor),
+                ),
               ),
+              dropdownColor: darkBlue,
+              style: const TextStyle(color: Colors.white),
+              items: _levels.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedLevel = newValue;
+                });
+              },
+            ),
               const SizedBox(height: 20),
               SizedBox(
                 height: 300,

@@ -162,9 +162,9 @@ class _FindMeetPageState extends State<FindMeetPage> {
                     children: snapshot.data!.docs.map((DocumentSnapshot document) {
                       Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
                       return ListTile(
-                        title: Text(data['eventName'],
+                        title: Text(data['name'],
                           style: const TextStyle(color: Colors.white),),
-                        subtitle: Text(data['userId'],
+                        subtitle: Text(data['ownerId'],
                           style: const TextStyle(color: Colors.white70),),
                       );
                     }).toList(),
@@ -210,16 +210,16 @@ class _FindMeetPageState extends State<FindMeetPage> {
   void searchMeetings() {
     Query query = FirebaseFirestore.instance.collection('meetings');
     if (_sportController.text.isNotEmpty) {
-      query = query.where('sport', isEqualTo: _sportController.text);
+      query = query.where('category', isEqualTo: _sportController.text);
     }
     if (_cityController.text.isNotEmpty) {
-      query = query.where('city', isEqualTo: _cityController.text);
+      query = query.where('location', isEqualTo: _cityController.text);
     }
     if (_selectedLevel != null) {
-      query = query.where('level', isEqualTo: _selectedLevel);
+      query = query.where('skillLevel', isEqualTo: _selectedLevel);
     }
     if (_areFreeSpotsAvailable) {
-      query = query.where('spotsAvailable', isEqualTo: true);
+      query = query.where('participantsCount', isGreaterThan: 'registeredCount');
     }
     if (_selectedDate != null) {
       query = query.where('date', isEqualTo: "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}");
