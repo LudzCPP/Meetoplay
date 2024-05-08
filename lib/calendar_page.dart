@@ -34,7 +34,15 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   List<String> _getEventsForDay(DateTime day) {
-    return _allEvents[DateTime.utc(day.year, day.month, day.day)] ?? [];
+    List<String> meetings = [];
+
+    for (var meeting in globalMeetings){
+      if(meeting.date == '${day.day}/${day.month}/${day.year}'){
+          meetings.add(meeting.name);
+      }
+    }
+    return meetings;
+    //return _allEvents[DateTime.utc(day.year, day.month, day.day)] ?? [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
