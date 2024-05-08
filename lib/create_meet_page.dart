@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/home_page.dart';
@@ -27,8 +28,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController(); // New
-  final TextEditingController _categoryController = TextEditingController(); // New
-  final TextEditingController _skillLevelController = TextEditingController(); // New
+  final TextEditingController _categoryController =
+      TextEditingController(); // New
+  final TextEditingController _skillLevelController =
+      TextEditingController(); // New
+  final TextEditingController _searchController = TextEditingController();
 
   String? _selectedLevel;
   String? _selectedSport;
@@ -63,6 +67,40 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
         ),
       );
     });
+  }
+
+  Future<void> _searchAndUpdateLocation(String address) async {
+    try {
+      List<Location> locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        final firstLocation = locations.first;
+        LatLng newLatLng =
+            LatLng(firstLocation.latitude, firstLocation.longitude);
+        setState(() {
+          _mapController.move(newLatLng, _mapController.camera.zoom);
+          _temporaryMarker = Marker(
+            width: 50,
+            height: 50,
+            point: newLatLng,
+            alignment: const Alignment(0, -0.9),
+            child: const Icon(
+              Icons.location_on,
+              color: Colors.blue,
+              size: 50,
+            ),
+          );
+          _locationController.text =
+              '${newLatLng.latitude}, ${newLatLng.longitude}';
+          _selectedLocation = newLatLng;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Adres nie został znaleziony.')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Błąd wyszukiwania adresu: $e')));
+    }
   }
 
   @override
@@ -183,71 +221,114 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
-              value: _selectedSport,
-              decoration: const InputDecoration(
-                labelText: 'Wybierz sport',
-                labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                value: _selectedSport,
+                decoration: const InputDecoration(
+                  labelText: 'Sport',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: specialActionButtonColor),
-                ),
+                dropdownColor: darkBlue,
+                style: const TextStyle(color: Colors.white),
+                items: sportsList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedSport = newValue;
+                  });
+                },
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wybrać sport';
+                  }
+                  return null;
+                },
               ),
-              dropdownColor: darkBlue,
-              style: const TextStyle(color: Colors.white),
-              items: sportsList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedSport = newValue;
-                });
-              },
-              icon: const Icon(Icons.arrow_drop_down,
-                  color: Colors.white),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Proszę wybrać sport';
-                }
-                return null;
-              },
-            ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 itemHeight: 50,
-              value: _selectedLevel,
-              decoration: const InputDecoration(
-                labelText: 'Poziom zaawansowania',
-                labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                value: _selectedLevel,
+                decoration: const InputDecoration(
+                  labelText: 'Poziom zaawansowania',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: specialActionButtonColor),
+                  ),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: specialActionButtonColor),
+                dropdownColor: darkBlue,
+                style: const TextStyle(color: Colors.white),
+                items: _levels.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedLevel = newValue;
+                  });
+                },
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+              ),
+              const SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: Colors.blueAccent),
+                    decoration: InputDecoration(
+                      hintText: 'Wpisz adres, np. ul. Piotrkowska, Łódź',
+                      hintStyle:
+                          TextStyle(color: Colors.blueAccent.withOpacity(0.8)),
+                      prefixIcon:
+                          const Icon(Icons.map, color: Colors.blueAccent),
+                      suffixIcon: IconButton(
+                        icon:
+                            const Icon(Icons.search, color: Colors.blueAccent),
+                        onPressed: () {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          _searchAndUpdateLocation(_searchController.text);
+                        },
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 20),
+                    ),
+                    onSubmitted: (value) {
+                      _searchAndUpdateLocation(value);
+                    },
+                  ),
                 ),
               ),
-              dropdownColor: darkBlue,
-              style: const TextStyle(color: Colors.white),
-              items: _levels.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedLevel = newValue;
-                });
-              },
-            ),
-              const SizedBox(height: 20),
+
               SizedBox(
                 height: 300,
                 child: FlutterMap(
+                  mapController: _mapController,
                   options: MapOptions(
                     cameraConstraint: CameraConstraint.contain(
                       bounds: LatLngBounds(
@@ -268,7 +349,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.app',
                     ),
                     MarkerLayer(markers: markersToShow),
@@ -293,29 +375,37 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           participantsCount: 0,
                           registeredCount: 0,
                           waitListCount: 0,
-                          organizerName: FirebaseAuth.instance.currentUser!.displayName ?? "Organizer",
+                          organizerName:
+                              FirebaseAuth.instance.currentUser!.displayName ??
+                                  "Organizer",
                           organizerRating: 4.5, // Example rating
                           participants: [],
                           ownerId: FirebaseAuth.instance.currentUser!.uid,
                         );
-                        DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid).updateMeeting(_eventNameController.text,
+                        DatabaseService(
+                                uid: FirebaseAuth.instance.currentUser!.uid)
+                            .updateMeeting(
+                          _eventNameController.text,
                           _selectedLocation,
                           _dateController.text,
                           _timeController.text,
                           _categoryController.text,
                           _skillLevelController.text,
-                           0,
-                           0,
-                           0,
-                           FirebaseAuth.instance.currentUser!.displayName ?? "Organizer",
-                           4.5, // Example rating
-                           [],
-                           FirebaseAuth.instance.currentUser!.uid,);
+                          0,
+                          0,
+                          0,
+                          FirebaseAuth.instance.currentUser!.displayName ??
+                              "Organizer",
+                          4.5, // Example rating
+                          [],
+                          FirebaseAuth.instance.currentUser!.uid,
+                        );
 
                         // Store new meeting in database or manage it locally
                         print("New Meeting Created: ${newMeeting.name}");
 
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Spotkanie zostało dodane!'),
@@ -325,7 +415,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                       }
                     },
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
+                      backgroundColor:
+                          MaterialStateProperty.all(specialActionButtonColor),
                       foregroundColor: MaterialStateProperty.all(Colors.white),
                     ),
                     child: const Text('Dodaj spotkanie'),
@@ -347,6 +438,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     _timeController.dispose();
     _categoryController.dispose();
     _skillLevelController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 }

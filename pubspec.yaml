@@ -44,6 +44,7 @@ dependencies:
   fluttertoast: ^8.2.5
   google_sign_in: ^6.2.1
   flutter_map_marker_popup: ^6.1.2
+  geocoding: ^3.0.0
 
   
 
