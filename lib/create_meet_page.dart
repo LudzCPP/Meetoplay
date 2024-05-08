@@ -37,6 +37,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
   String? _selectedLevel;
   String? _selectedSport;
+  bool _isOrganizerParticipating = false;
   int? _selectedMaxParticipants;
   LatLng _selectedLocation = const LatLng(0, 0);
   final List<String> _levels = [
@@ -106,12 +107,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   }
 
   String formatTimeOfDay(TimeOfDay time) {
-  final now = DateTime.now();
-  final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-  final format = DateFormat('HH:mm'); // Używając DateFormat z pakietu intl
-  return format.format(dt);
-}
-
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    final format = DateFormat('HH:mm'); // Używając DateFormat z pakietu intl
+    return format.format(dt);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -222,14 +222,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           data: ThemeData.dark().copyWith(
                             colorScheme: const ColorScheme.dark(
                               primary: orange,
-                              onPrimary:
-                                  white, // Kolor tekstu na przyciskach
-                              surface: darkBlue, // Tło dla elementów dialogu
-                              onSurface:
-                                  white, // Kolor tekstu i ikon na tle
+                              onPrimary: white,
+                              surface: darkBlue,
+                              onSurface: white,
                             ),
-                            dialogBackgroundColor:
-                                darkBlue, // Tło samego dialogu
+                            dialogBackgroundColor: darkBlue,
                           ),
                           child: child!,
                         ),
@@ -326,7 +323,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
                 icon: const Icon(Icons.arrow_drop_down, color: white),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 20),            
               DropdownButtonFormField<int>(
                 value: _selectedMaxParticipants,
                 decoration: const InputDecoration(
@@ -355,6 +352,19 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 icon: const Icon(Icons.arrow_drop_down, color: white),
               ),
               const SizedBox(height: 40),
+              CheckboxListTile(
+                activeColor: orange ,
+                title: const Text('Biorę udział w wydarzeniu', style: TextStyle(color: white),),
+                value: _isOrganizerParticipating,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _isOrganizerParticipating = value!;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity
+                    .leading,
+              ),
+              const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
