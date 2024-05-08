@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/home_page.dart';
@@ -36,6 +37,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
   String? _selectedLevel;
   String? _selectedSport;
+  int? _selectedMaxParticipants;
   LatLng _selectedLocation = const LatLng(0, 0);
   final List<String> _levels = [
     'Początkujący',
@@ -103,6 +105,14 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     }
   }
 
+  String formatTimeOfDay(TimeOfDay time) {
+  final now = DateTime.now();
+  final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+  final format = DateFormat('HH:mm'); // Używając DateFormat z pakietu intl
+  return format.format(dt);
+}
+
+
   @override
   Widget build(BuildContext context) {
     List<Marker> markersToShow = [_temporaryMarker];
@@ -131,15 +141,15 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 controller: _eventNameController,
                 decoration: const InputDecoration(
                   labelText: 'Nazwa wydarzenia',
-                  labelStyle: TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: white),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wpisać nazwę wydarzenia';
@@ -153,15 +163,15 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 controller: _dateController,
                 decoration: const InputDecoration(
                   labelText: 'Data',
-                  labelStyle: TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: white),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wpisać datę wydarzenia';
@@ -179,9 +189,9 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         data: ThemeData.dark().copyWith(
                           colorScheme: const ColorScheme.dark(
                             primary: specialActionButtonColor,
-                            onPrimary: Colors.white,
+                            onPrimary: white,
                             surface: lightBlue,
-                            onSurface: Colors.white,
+                            onSurface: white,
                           ),
                           dialogBackgroundColor: darkBlue,
                         ),
@@ -199,41 +209,75 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              TextFormField(
-                controller: _timeController,
-                decoration: const InputDecoration(
-                  labelText: 'Godzina',
-                  labelStyle: TextStyle(color: Colors.white),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: specialActionButtonColor),
+              GestureDetector(
+                onTap: () async {
+                  TimeOfDay? pickedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                    builder: (context, child) {
+                      return MediaQuery(
+                        data: MediaQuery.of(context)
+                            .copyWith(alwaysUse24HourFormat: true),
+                        child: Theme(
+                          data: ThemeData.dark().copyWith(
+                            colorScheme: const ColorScheme.dark(
+                              primary: orange,
+                              onPrimary:
+                                  white, // Kolor tekstu na przyciskach
+                              surface: darkBlue, // Tło dla elementów dialogu
+                              onSurface:
+                                  white, // Kolor tekstu i ikon na tle
+                            ),
+                            dialogBackgroundColor:
+                                darkBlue, // Tło samego dialogu
+                          ),
+                          child: child!,
+                        ),
+                      );
+                    },
+                  );
+                  if (pickedTime != null) {
+                    _timeController.text = formatTimeOfDay(pickedTime);
+                  }
+                },
+                child: AbsorbPointer(
+                  child: TextFormField(
+                    controller: _timeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Godzina',
+                      labelStyle: TextStyle(color: white),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: white),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: orange),
+                      ),
+                    ),
+                    style: const TextStyle(color: white),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Proszę wybrać godzinę wydarzenia';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-                style: const TextStyle(color: Colors.white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wpisać godzinę wydarzenia';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 value: _selectedSport,
                 decoration: const InputDecoration(
                   labelText: 'Sport',
-                  labelStyle: TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: white),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
                 dropdownColor: darkBlue,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: white),
                 items: sportsList.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
@@ -245,7 +289,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     _selectedSport = newValue;
                   });
                 },
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                icon: const Icon(Icons.arrow_drop_down, color: white),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Proszę wybrać sport';
@@ -259,16 +303,16 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 value: _selectedLevel,
                 decoration: const InputDecoration(
                   labelText: 'Poziom zaawansowania',
-                  labelStyle: TextStyle(color: Colors.white),
+                  labelStyle: TextStyle(color: white),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                    borderSide: BorderSide(color: white),
                   ),
                   focusedBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: specialActionButtonColor),
                   ),
                 ),
                 dropdownColor: darkBlue,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: white),
                 items: _levels.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
@@ -280,14 +324,42 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     _selectedLevel = newValue;
                   });
                 },
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                icon: const Icon(Icons.arrow_drop_down, color: white),
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<int>(
+                value: _selectedMaxParticipants,
+                decoration: const InputDecoration(
+                  labelText: 'Maksymalna liczba uczestników',
+                  labelStyle: TextStyle(color: white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: white),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: orange),
+                  ),
+                ),
+                dropdownColor: darkBlue,
+                style: const TextStyle(color: white),
+                items: List<DropdownMenuItem<int>>.generate(49, (int index) {
+                  return DropdownMenuItem<int>(
+                    value: index + 2,
+                    child: Text('${index + 2}'),
+                  );
+                }),
+                onChanged: (int? value) {
+                  setState(() {
+                    _selectedMaxParticipants = value;
+                  });
+                },
+                icon: const Icon(Icons.arrow_drop_down, color: white),
               ),
               const SizedBox(height: 40),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: white,
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
@@ -414,7 +486,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     style: ButtonStyle(
                       backgroundColor:
                           MaterialStateProperty.all(specialActionButtonColor),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      foregroundColor: MaterialStateProperty.all(white),
                     ),
                     child: const Text('Dodaj spotkanie'),
                   ),
