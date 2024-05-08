@@ -365,23 +365,23 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // Replace this with Meeting creation logic
-                        Meeting newMeeting = Meeting(
-                          name: _eventNameController.text,
-                          location: _selectedLocation,
-                          date: _dateController.text,
-                          time: _timeController.text,
-                          category: _categoryController.text,
-                          skillLevel: _skillLevelController.text,
-                          participantsCount: 0,
-                          registeredCount: 0,
-                          waitListCount: 0,
-                          organizerName:
-                              FirebaseAuth.instance.currentUser!.displayName ??
-                                  "Organizer",
-                          organizerRating: 4.5, // Example rating
-                          participants: [],
-                          ownerId: FirebaseAuth.instance.currentUser!.uid,
-                        );
+                        // Meeting newMeeting = Meeting(
+                        //   name: _eventNameController.text,
+                        //   location: _selectedLocation,
+                        //   date: _dateController.text,
+                        //   time: _timeController.text,
+                        //   category: _categoryController.text,
+                        //   skillLevel: _skillLevelController.text,
+                        //   participantsCount: 0,
+                        //   registeredCount: 0,
+                        //   waitListCount: 0,
+                        //   organizerName:
+                        //       FirebaseAuth.instance.currentUser!.displayName ??
+                        //           "Organizer",
+                        //   organizerRating: 4.5, // Example rating
+                        //   participants: [],
+                        //   ownerId: FirebaseAuth.instance.currentUser!.uid,
+                        // );
                         DatabaseService(
                                 uid: FirebaseAuth.instance.currentUser!.uid)
                             .updateMeeting(
@@ -389,8 +389,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           _selectedLocation,
                           _dateController.text,
                           _timeController.text,
-                          _categoryController.text,
-                          _skillLevelController.text,
+                          _selectedSport.toString(),
+                          _selectedLevel.toString(),
                           0,
                           0,
                           0,
@@ -400,10 +400,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
-
                         // Store new meeting in database or manage it locally
-                        print("New Meeting Created: ${newMeeting.name}");
-
                         Navigator.of(context)
                             .popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(

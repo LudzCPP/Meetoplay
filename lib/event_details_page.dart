@@ -79,14 +79,14 @@ class EventDetailsPage extends StatelessWidget {
                               child: Text('Miejsce: ${address[0]}',
                                   style: const TextStyle(
                                       fontSize: 18,
-                                      color: Colors.white,
+                                      color: white,
                                       fontWeight: FontWeight.bold)),
                             );
                           } else if (snapshot.hasError) {
                             return Text("Błąd: ${snapshot.error}",
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    color: Colors.white,
+                                    color: white,
                                     fontWeight: FontWeight.bold));
                           } else {
                             return const CircularProgressIndicator();
