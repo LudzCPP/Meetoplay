@@ -14,26 +14,24 @@ import 'package:meetoplay/services/database.dart';
 // Import Meeting class here
 import 'package:meetoplay/models/meetings.dart'; // Zaimportuj swoją klasę Meeting
 
-class CreateMeetPage extends StatefulWidget {
-  const CreateMeetPage({super.key});
+class EditMeetPage extends StatefulWidget {
+  final Meeting meeting;
+
+  const EditMeetPage({required this.meeting, Key? key}) : super(key: key);
 
   @override
-  _CreateMeetPageState createState() => _CreateMeetPageState();
+  _EditMeetPageState createState() => _EditMeetPageState();
 }
 
-class _CreateMeetPageState extends State<CreateMeetPage> {
+class _EditMeetPageState extends State<EditMeetPage> {
   final MapController _mapController = MapController();
   final _formKey = GlobalKey<FormState>();
   final GlobalKey _mapKey = GlobalKey();
-  final TextEditingController _eventNameController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController(); // New
-  final TextEditingController _categoryController =
-      TextEditingController(); // New
-  final TextEditingController _skillLevelController =
-      TextEditingController(); // New
-  final TextEditingController _searchController = TextEditingController();
+  late TextEditingController _eventNameController;
+  late TextEditingController _locationController;
+  late TextEditingController _dateController;
+  late TextEditingController _timeController;
+  late TextEditingController _searchController;
 
   String? _selectedLevel;
   String? _selectedSport;
@@ -45,7 +43,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     'Średniozaawansowany',
     'Zaawansowany'
   ];
-  List<Participant> currentParticipants = [];
   Marker _temporaryMarker = const Marker(
     point: LatLng(0, 0),
     child: Icon(
@@ -54,6 +51,34 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       size: 0,
     ),
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _eventNameController = TextEditingController(text: widget.meeting.name);
+    _locationController = TextEditingController(
+        text: '${widget.meeting.location.latitude}, ${widget.meeting.location.longitude}');
+    _dateController = TextEditingController(text: widget.meeting.date);
+    _timeController = TextEditingController(text: widget.meeting.time);
+    _searchController = TextEditingController();
+    _selectedSport = widget.meeting.category;
+    _selectedLevel = widget.meeting.skillLevel;
+    _selectedMaxParticipants = widget.meeting.participantsCount;
+    _isOrganizerParticipating = widget.meeting.participants
+        .contains(FirebaseAuth.instance.currentUser!.uid);
+    _selectedLocation = widget.meeting.location;
+    _temporaryMarker = Marker(
+      width: 50,
+      height: 50,
+      alignment: const Alignment(0, -0.9),
+      point: widget.meeting.location,
+      child: const Icon(
+        Icons.location_on,
+        color: Colors.blue,
+        size: 50,
+      ),
+    );
+  }
 
   void _handleTap(TapPosition, LatLng latlng) {
     setState(() {
@@ -120,7 +145,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('DODAJ SPOTKANIE'),
+        title: const Text('EDYTUJ SPOTKANIE'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -324,7 +349,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
                 icon: const Icon(Icons.arrow_drop_down, color: white),
               ),
-              const SizedBox(height: 20),            
+              const SizedBox(height: 20),
               DropdownButtonFormField<int>(
                 value: _selectedMaxParticipants,
                 decoration: const InputDecoration(
@@ -354,18 +379,18 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
               ),
               const SizedBox(height: 40),
               CheckboxListTile(
-                activeColor: orange ,
-                title: const Text('Biorę udział w wydarzeniu', style: TextStyle(color: white),),
+                activeColor: orange,
+                title: const Text(
+                  'Biorę udział w wydarzeniu',
+                  style: TextStyle(color: white),
+                ),
                 value: _isOrganizerParticipating,
                 onChanged: (bool? value) {
                   setState(() {
                     _isOrganizerParticipating = value!;
-                    Participant participant = Participant(name: currentUser?.displayName ?? 'brak nazwy', rating: 4);
-                    currentParticipants.add(participant);
                   });
                 },
-                controlAffinity: ListTileControlAffinity
-                    .leading,
+                controlAffinity: ListTileControlAffinity.leading,
               ),
               const SizedBox(height: 20),
               Padding(
@@ -387,13 +412,12 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     style: const TextStyle(color: Colors.blueAccent),
                     decoration: InputDecoration(
                       hintText: 'Wpisz adres, np. ul. Piotrkowska, Łódź',
-                      hintStyle:
-                          TextStyle(color: Colors.blueAccent.withOpacity(0.8)),
+                      hintStyle: TextStyle(
+                          color: Colors.blueAccent.withOpacity(0.8)),
                       prefixIcon:
                           const Icon(Icons.map, color: Colors.blueAccent),
                       suffixIcon: IconButton(
-                        icon:
-                            const Icon(Icons.search, color: Colors.blueAccent),
+                        icon: const Icon(Icons.search, color: Colors.blueAccent),
                         onPressed: () {
                           FocusManager.instance.primaryFocus?.unfocus();
                           _searchAndUpdateLocation(_searchController.text);
@@ -449,27 +473,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Replace this with Meeting creation logic
-                        // Meeting newMeeting = Meeting(
-                        //   name: _eventNameController.text,
-                        //   location: _selectedLocation,
-                        //   date: _dateController.text,
-                        //   time: _timeController.text,
-                        //   category: _categoryController.text,
-                        //   skillLevel: _skillLevelController.text,
-                        //   participantsCount: 0,
-                        //   registeredCount: 0,
-                        //   waitListCount: 0,
-                        //   organizerName:
-                        //       FirebaseAuth.instance.currentUser!.displayName ??
-                        //           "Organizer",
-                        //   organizerRating: 4.5, // Example rating
-                        //   participants: [],
-                        //   ownerId: FirebaseAuth.instance.currentUser!.uid,
-                        // );
+                        // Update meeting logic here
                         DatabaseService(
                                 uid: FirebaseAuth.instance.currentUser!.uid)
-                            .createMeeting(
+                            .updateMeeting(
+                          widget.meeting.meetingId,
                           _eventNameController.text,
                           _selectedLocation,
                           _dateController.text,
@@ -485,12 +493,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
-                        // Store new meeting in database or manage it locally
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
+                        Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Spotkanie zostało dodane!'),
+                            content: Text('Spotkanie zostało zaktualizowane!'),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -501,7 +507,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           MaterialStateProperty.all(specialActionButtonColor),
                       foregroundColor: MaterialStateProperty.all(white),
                     ),
-                    child: const Text('Dodaj spotkanie'),
+                    child: const Text('Zaktualizuj spotkanie'),
                   ),
                 ),
               ),
@@ -518,8 +524,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
     _locationController.dispose();
     _dateController.dispose();
     _timeController.dispose();
-    _categoryController.dispose();
-    _skillLevelController.dispose();
     _searchController.dispose();
     super.dispose();
   }

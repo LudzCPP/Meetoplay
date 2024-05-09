@@ -51,7 +51,9 @@ class AuthWrapper extends StatelessWidget {
                     for (var participant in data['participants']){
                         participants.add(participant);
                     };
-                    Meeting meeting = Meeting(name: data['name'],
+                    Meeting meeting = Meeting(
+                    meetingId: data['meetingId'],
+                    name: data['name'],
                     location: location, 
                     date: data['date'], 
                     time: data['time'],

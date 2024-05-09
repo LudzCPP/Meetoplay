@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
 class Meeting {
+  String meetingId;
   String name;
   LatLng location;
   String date;
@@ -16,6 +17,7 @@ class Meeting {
   String ownerId;
 
   Meeting({
+    required this.meetingId,
     required this.name,
     required this.location,
     required this.date,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meetoplay/edit_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
 import 'models/meetings.dart';
@@ -126,6 +127,24 @@ class EventDetailsPage extends StatelessWidget {
                           fontWeight: FontWeight.bold)),
                   // More Widgets as per existing code
                 ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditMeetPage(meeting: meeting),
+                    ),
+                  );
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(orange),
+                  foregroundColor: MaterialStateProperty.all(white),
+                ),
+                child: const Text('Edytuj spotkanie'),
               ),
             ),
             // Additional Widgets as per existing code
