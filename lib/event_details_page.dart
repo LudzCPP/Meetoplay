@@ -4,13 +4,57 @@ import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
 import 'models/meetings.dart';
 
-class EventDetailsPage extends StatelessWidget {
+class EventDetailsPage extends StatefulWidget {
   final Meeting meeting;
 
   const EventDetailsPage({super.key, required this.meeting});
 
   @override
+  State<EventDetailsPage> createState() => _EventDetailsPageState();
+}
+
+class _EventDetailsPageState extends State<EventDetailsPage> {
+  bool joined = false;
+  @override
   Widget build(BuildContext context) {
+    
+    void showJoinDialog() {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Potwierdzenie"),
+            content:
+                const Text("Czy na pewno chcesz dołączyć do tego wydarzenia?"),
+            actions: <Widget>[
+              TextButton(
+                child: const Text("Anuluj"),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Zamknij okno dialogowe
+                },
+              ),
+              TextButton(
+                child: const Text("Dołącz"),
+                onPressed: () {
+                  setState(() {
+                    joined = true;
+                    print(joined); // Zaktualizuj stan dołączenia
+                  });
+                  Navigator.of(context).pop(); // Zamknij okno dialogowe
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    List<Participant> participants = [
+      Participant(name: "Jan Kowalski", rating: 5, userId: "user001"),
+      Participant(name: "Anna Nowak", rating: 4, userId: "user002"),
+      Participant(name: "Tomasz Duda", rating: 3, userId: "user003"),
+    ];
+
     Future<String> getAddressFromLatLng(
         double latitude, double longitude) async {
       try {
@@ -28,7 +72,7 @@ class EventDetailsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(meeting.name, style: const TextStyle(color: white)),
+        title: Text(widget.meeting.name, style: const TextStyle(color: white)),
         backgroundColor: darkBlue,
       ),
       body: SingleChildScrollView(
@@ -44,7 +88,7 @@ class EventDetailsPage extends StatelessWidget {
                     children: [
                       const Icon(Icons.sports_soccer, color: white),
                       const SizedBox(width: 8),
-                      Text('Sport: ${meeting.category}',
+                      Text('Sport: ${widget.meeting.category}',
                           style: const TextStyle(
                               fontSize: 18,
                               color: white,
@@ -56,7 +100,7 @@ class EventDetailsPage extends StatelessWidget {
                     children: [
                       const Icon(Icons.bar_chart, color: white),
                       const SizedBox(width: 8),
-                      Text('Poziom: ${meeting.skillLevel}',
+                      Text('Poziom: ${widget.meeting.skillLevel}',
                           style: const TextStyle(
                               fontSize: 18,
                               color: white,
@@ -70,8 +114,9 @@ class EventDetailsPage extends StatelessWidget {
                       const Icon(Icons.location_on, color: Colors.white),
                       const SizedBox(width: 8),
                       FutureBuilder<String>(
-                        future: getAddressFromLatLng(meeting.location.latitude,
-                            meeting.location.longitude),
+                        future: getAddressFromLatLng(
+                            widget.meeting.location.latitude,
+                            widget.meeting.location.longitude),
                         builder: (BuildContext context,
                             AsyncSnapshot<String> snapshot) {
                           if (snapshot.hasData) {
@@ -102,7 +147,7 @@ class EventDetailsPage extends StatelessWidget {
                     children: [
                       const Icon(Icons.calendar_today, color: white),
                       const SizedBox(width: 8),
-                      Text('Data: ${meeting.date}',
+                      Text('Data: ${widget.meeting.date}',
                           style: const TextStyle(
                               fontSize: 18,
                               color: white,
@@ -110,7 +155,7 @@ class EventDetailsPage extends StatelessWidget {
                       const SizedBox(width: 4),
                       const Icon(Icons.access_time, color: white),
                       const SizedBox(width: 8),
-                      Text(meeting.time,
+                      Text(widget.meeting.time,
                           style: const TextStyle(
                               fontSize: 18,
                               color: white,
@@ -118,25 +163,42 @@ class EventDetailsPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Continue with existing widgets
                   Text(
-                      'Maksymalna liczba uczestników: ${meeting.participantsCount}',
+                      'Maksymalna liczba uczestników: ${widget.meeting.participantsCount}',
                       style: const TextStyle(
                           fontSize: 18,
                           color: white,
                           fontWeight: FontWeight.bold)),
-                  // More Widgets as per existing code
                 ],
               ),
             ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics:
+                  const NeverScrollableScrollPhysics(), // Wyłącza przewijanie listy uczestników
+              itemCount: participants.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: const Icon(Icons.person, color: white),
+                  title: Text(participants[index].name,
+                      style: const TextStyle(
+                          color: white, fontWeight: FontWeight.bold)),
+                  subtitle: Text('Ocena: ${participants[index].rating}',
+                      style: const TextStyle(color: white)),
+                );
+              },
+            ),
+
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditMeetPage(meeting: meeting),
+                      builder: (context) =>
+                          EditMeetPage(meeting: widget.meeting),
                     ),
                   );
                 },
@@ -147,9 +209,35 @@ class EventDetailsPage extends StatelessWidget {
                 child: const Text('Edytuj spotkanie'),
               ),
             ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  // Logika dołączania do wydarzenia
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(orange),
+                  foregroundColor: MaterialStateProperty.all(white),
+                ),
+                child: const Text('Dołącz do wydarzenia'),
+              ),
+            ),
+
             // Additional Widgets as per existing code
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if(!joined) {
+            showJoinDialog();
+          } 
+          print(joined);
+        },
+        backgroundColor:
+            joined ? Colors.green : orange, // Wyłącz przycisk, jeśli dołączono
+        child: Icon(joined ? Icons.check : Icons.add, color: white),
       ),
     );
   }

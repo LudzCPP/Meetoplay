@@ -485,7 +485,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
-                        // Store new meeting in database or manage it locally
                         Navigator.of(context)
                             .popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(
