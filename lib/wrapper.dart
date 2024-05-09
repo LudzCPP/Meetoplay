@@ -43,14 +43,16 @@ class AuthWrapper extends StatelessWidget {
               stream: FirebaseFirestore.instance.collection('meetings').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  globalMarkers.clear(); // Clear existing markers before updating
+                  globalMarkers.clear();
+                  globalMeetings.clear();
+                  print('restart');
                   for (var doc in snapshot.data!.docs) {
                     var data = doc.data() as Map<String, dynamic>;
                     LatLng location = LatLng(data['location']['latitude'], data['location']['longitude']);
                     List<Participant> participants = [];
                     for (var participant in data['participants']){
-                        participants.add(participant);
-                    };
+                        participants.add(Participant(name: participant['participant'], rating: 4));
+                    }
                     Meeting meeting = Meeting(
                     meetingId: data['meetingId'],
                     name: data['name'],

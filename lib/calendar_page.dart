@@ -39,6 +39,7 @@ class _CalendarPageState extends State<CalendarPage> {
     for (var meeting in globalMeetings){
       if(meeting.date == '${day.day}/${day.month}/${day.year}'){
           meetings.add(meeting.name);
+          print(meeting.name);
       }
     }
     return meetings;

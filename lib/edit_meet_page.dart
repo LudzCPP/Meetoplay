@@ -17,7 +17,7 @@ import 'package:meetoplay/models/meetings.dart'; // Zaimportuj swoją klasę Mee
 class EditMeetPage extends StatefulWidget {
   final Meeting meeting;
 
-  const EditMeetPage({required this.meeting, Key? key}) : super(key: key);
+  const EditMeetPage({required this.meeting, super.key});
 
   @override
   _EditMeetPageState createState() => _EditMeetPageState();

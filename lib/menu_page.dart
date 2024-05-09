@@ -16,54 +16,55 @@ class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Function to find the nearest meeting in terms of time
-   Meeting? findNearestMeeting(List<Meeting> meetings) {
-  if (meetings.isEmpty) return null;
+    Meeting? findNearestMeeting(List<Meeting> meetings) {
+      if (meetings.isEmpty) return null;
 
-  // Aktualna data i czas
-  DateTime now = DateTime.now();
+      // Aktualna data i czas
+      DateTime now = DateTime.now();
 
-  // Znajdź najbliższe wydarzenie
-  Meeting? nearestMeeting;
-  Duration? nearestDuration;
+      // Znajdź najbliższe wydarzenie
+      Meeting? nearestMeeting;
+      Duration? nearestDuration;
 
-  for (Meeting meeting in meetings) {
-    // Dostosowanie formatu daty i czasu
-    String dateTimeString = '${meeting.date}/${meeting.time}';
-    List<String> dateTimeParts = dateTimeString.split('/');
-    String formattedDate = '${dateTimeParts[1].padLeft(2, '0')}/${dateTimeParts[0].padLeft(2, '0')}/${dateTimeParts[2]}';
-    String formattedTime = dateTimeParts[3].padLeft(5, '0');
-    String formattedDateTimeString = '$formattedDate $formattedTime';
+      for (Meeting meeting in meetings) {
+        // Dostosowanie formatu daty i czasu
+        String dateTimeString = '${meeting.date}/${meeting.time}';
+        List<String> dateTimeParts = dateTimeString.split('/');
+        String formattedDate =
+            '${dateTimeParts[1].padLeft(2, '0')}/${dateTimeParts[0].padLeft(2, '0')}/${dateTimeParts[2]}';
+        String formattedTime = dateTimeParts[3].padLeft(5, '0');
+        String formattedDateTimeString = '$formattedDate $formattedTime';
 
-    // Parsowanie do obiektu DateTime
-    DateTime meetingDateTime = DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
+        // Parsowanie do obiektu DateTime
+        DateTime meetingDateTime =
+            DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
 
-    if (meetingDateTime.isAfter(now)) {
-      Duration difference = meetingDateTime.difference(now);
-      if (nearestDuration == null || difference < nearestDuration) {
-        nearestDuration = difference;
-        nearestMeeting = meeting;
+        if (meetingDateTime.isAfter(now)) {
+          Duration difference = meetingDateTime.difference(now);
+          if (nearestDuration == null || difference < nearestDuration) {
+            nearestDuration = difference;
+            nearestMeeting = meeting;
+          }
+        }
       }
+
+      return nearestMeeting;
     }
-  }
 
-  return nearestMeeting;
-}
+    List<Meeting> userMeetings = [];
 
-List<Meeting> userMeetings =[];
-
-    List<Meeting> getUserMeetings (){
-      for(var meeting in globalMeetings){
-        for(var participant in meeting.participants){
-          if(participant == currentUser){
+    List<Meeting> getUserMeetings() {
+      for (var meeting in globalMeetings) {
+        for (var participant in meeting.participants) {
+          if (participant == currentUser) {
             userMeetings.add(meeting);
           }
         }
-
       }
 
       return userMeetings;
-
     }
+
     // Get the nearest meeting
     Meeting? nearestMeeting = findNearestMeeting(globalMeetings);
 
@@ -75,7 +76,6 @@ List<Meeting> userMeetings =[];
     String formatTime(DateTime time) {
       return DateFormat('HH:mm').format(time);
     }
-    
 
     return Center(
       child: Padding(
@@ -145,8 +145,8 @@ List<Meeting> userMeetings =[];
               padding: const EdgeInsets.all(5.0),
               child: GestureDetector(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xff1a659e),
                     borderRadius: BorderRadius.circular(12),
@@ -188,9 +188,7 @@ List<Meeting> userMeetings =[];
                                 ),
                                 Text(
                                   nearestMeeting != null
-                                      ? (nearestMeeting!.date) +
-                                          ' ' +
-                                          nearestMeeting!.time
+                                      ? '${nearestMeeting.date} ${nearestMeeting.time}'
                                       : '',
                                   style: const TextStyle(
                                     fontSize: 16,

@@ -183,7 +183,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   DateTime? pickedDate = await showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
+                    firstDate: DateTime.now(),
                     lastDate: DateTime(2025),
                     builder: (context, child) {
                       return Theme(
