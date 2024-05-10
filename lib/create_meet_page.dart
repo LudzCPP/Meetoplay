@@ -12,7 +12,8 @@ import 'package:meetoplay/menu_page.dart';
 import 'package:meetoplay/services/database.dart';
 
 // Import Meeting class here
-import 'package:meetoplay/models/meetings.dart'; // Zaimportuj swoją klasę Meeting
+import 'package:meetoplay/models/meetings.dart';
+import 'package:meetoplay/services/notification.dart'; // Zaimportuj swoją klasę Meeting
 
 class CreateMeetPage extends StatefulWidget {
   const CreateMeetPage({super.key});
@@ -485,6 +486,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
+                       
+
                         Navigator.of(context)
                             .popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -493,6 +496,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                             duration: Duration(seconds: 2),
                           ),
                         );
+                        //  if (_formKey.currentState!.validate()) {
+                        //   DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
+                        //   PushNotifications.scheduleNotification(_eventNameController.text, eventDateTime);
+
+                        //}
                       }
                     },
                     style: ButtonStyle(
