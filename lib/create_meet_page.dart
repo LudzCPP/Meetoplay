@@ -1,5 +1,5 @@
-import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,13 +7,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
-import 'package:meetoplay/home_page.dart';
-import 'package:meetoplay/menu_page.dart';
 import 'package:meetoplay/services/database.dart';
 
 // Import Meeting class here
 import 'package:meetoplay/models/meetings.dart';
-import 'package:meetoplay/services/notification.dart'; // Zaimportuj swoją klasę Meeting
+// Zaimportuj swoją klasę Meeting
 
 class CreateMeetPage extends StatefulWidget {
   const CreateMeetPage({super.key});
@@ -468,8 +466,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         //   participants: [],
                         //   ownerId: FirebaseAuth.instance.currentUser!.uid,
                         // );
-                        DatabaseService(
-                                uid: FirebaseAuth.instance.currentUser!.uid)
+                        String meetingId = DateTime.now().millisecondsSinceEpoch.toString();
+                        DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
                             .createMeeting(
                           _eventNameController.text,
                           _selectedLocation,
@@ -480,16 +478,20 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           _selectedMaxParticipants!.toInt(),
                           0,
                           0,
-                          FirebaseAuth.instance.currentUser!.displayName ??
-                              "Organizer",
+                          FirebaseAuth.instance.currentUser!.displayName ?? "Organizer",
                           4.5, // Example rating
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
-                       
 
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
+                        // Create a new collection in Firebase for meeting chat
+                        FirebaseFirestore.instance
+                            .collection('meetingchat_$meetingId')
+                            .doc('initialDoc')
+                            .set({
+                        });
+
+                        Navigator.of(context).popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Spotkanie zostało dodane!'),
@@ -505,7 +507,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all(specialActionButtonColor),
+                      MaterialStateProperty.all(specialActionButtonColor),
                       foregroundColor: MaterialStateProperty.all(white),
                     ),
                     child: const Text('Dodaj spotkanie'),
