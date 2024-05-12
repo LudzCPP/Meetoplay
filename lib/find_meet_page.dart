@@ -1,6 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/models/meetings.dart';
 
 class FindMeetPage extends StatefulWidget {
   const FindMeetPage({super.key});
@@ -22,13 +24,14 @@ class _FindMeetPageState extends State<FindMeetPage> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String? _selectedSport;
-  Stream<QuerySnapshot>? _meetingsStream;
+  List<Meeting> filteredMeetings = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('WYSZUKIWANIE'),
+        // App bar decoration
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -39,165 +42,148 @@ class _FindMeetPageState extends State<FindMeetPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              value: _selectedSport,
-              decoration: const InputDecoration(
-                labelText: 'Wybierz sport',
-                labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: specialActionButtonColor),
-                ),
+      body: Column(
+        children: [
+          // Sport dropdown
+          DropdownButtonFormField<String>(
+            value: _selectedSport,
+            decoration: const InputDecoration(
+              labelText: 'Wybierz sport',
+              labelStyle: TextStyle(color: Colors.white),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
               ),
-              dropdownColor: darkBlue,
-              style: const TextStyle(color: Colors.white),
-              items: sportsList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedSport = newValue;
-                });
-              },
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _cityController,
-              decoration: const InputDecoration(
-                labelText: 'Miasto',
-                labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: specialActionButtonColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              value: _selectedLevel,
-              decoration: const InputDecoration(
-                labelText: 'Poziom zaawansowania',
-                labelStyle: TextStyle(color: Colors.white),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: specialActionButtonColor),
-                ),
-              ),
-              dropdownColor: darkBlue,
-              style: const TextStyle(color: Colors.white),
-              items: _levels.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedLevel = newValue;
-                });
-              },
-            ),
-            SwitchListTile(
-              title: const Text('Dostępne miejsca',
-                  style: TextStyle(color: Colors.white)),
-              value: _areFreeSpotsAvailable,
-              onChanged: (bool value) {
-                setState(() {
-                  _areFreeSpotsAvailable = value;
-                });
-              },
-              activeColor: specialActionButtonColor,
-            ),
-            ListTile(
-              title: const Text("Wybierz datę",
-                  style: TextStyle(color: Colors.white)),
-              subtitle: Text(
-                _selectedDate == null
-                    ? "Nie wybrano daty"
-                    : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
-                style: const TextStyle(color: Colors.white70),
-              ),
-              onTap: _pickDate,
-            ),
-            ListTile(
-              title: const Text("Wybierz godzinę",
-                  style: TextStyle(color: Colors.white)),
-              subtitle: Text(
-                _selectedTime == null
-                    ? "Nie wybrano godziny"
-                    : _selectedTime!.format(context),
-                style: const TextStyle(color: Colors.white70),
-              ),
-              onTap: _pickTime,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32.0),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: searchMeetings,
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all(specialActionButtonColor),
-                    foregroundColor: MaterialStateProperty.all(Colors.white),
-                  ),
-                  child: const Text('Szukaj'),
-                ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: specialActionButtonColor),
               ),
             ),
-            StreamBuilder<QuerySnapshot>(
-              stream: _meetingsStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-                if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                }
-                if (snapshot.hasData) {
-                  return ListView(
-                    shrinkWrap: true,
-                    children:
-                        snapshot.data!.docs.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data =
-                          document.data()! as Map<String, dynamic>;
-                      return ListTile(
-                        title: Text(
-                          data['name'],
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          data['ownerId'],
-                          style: const TextStyle(color: Colors.white70),
+            dropdownColor: darkBlue,
+            style: const TextStyle(color: Colors.white),
+            items: sportsList.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedSport = newValue;
+              });
+            },
+          ),
+          const SizedBox(height: 20),
+          // City text field
+          TextFormField(
+            controller: _cityController,
+            decoration: const InputDecoration(
+              labelText: 'Miasto',
+              labelStyle: TextStyle(color: Colors.white),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: specialActionButtonColor),
+              ),
+            ),
+            style: const TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 20),
+          // Level dropdown
+          DropdownButtonFormField<String>(
+            value: _selectedLevel,
+            decoration: const InputDecoration(
+              labelText: 'Poziom zaawansowania',
+              labelStyle: TextStyle(color: Colors.white),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: specialActionButtonColor),
+              ),
+            ),
+            dropdownColor: darkBlue,
+            style: const TextStyle(color: Colors.white),
+            items: _levels.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedLevel = newValue;
+              });
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Dostępne miejsca',
+                style: TextStyle(color: Colors.white)),
+            value: _areFreeSpotsAvailable,
+            onChanged: (bool value) {
+              setState(() {
+                _areFreeSpotsAvailable = value;
+              });
+            },
+            activeColor: specialActionButtonColor,
+          ),
+          // Date and time pickers
+          ListTile(
+            title: const Text("Wybierz datę", style: TextStyle(color: Colors.white)),
+            subtitle: Text(
+              _selectedDate == null
+                  ? "Nie wybrano daty"
+                  : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
+              style: const TextStyle(color: Colors.white70),
+            ),
+            onTap: _pickDate,
+          ),
+          ListTile(
+            title: const Text("Wybierz godzinę", style: TextStyle(color: Colors.white)),
+            subtitle: Text(
+              _selectedTime == null
+                  ? "Nie wybrano godziny"
+                  : _selectedTime!.format(context),
+              style: const TextStyle(color: Colors.white70),
+            ),
+            onTap: _pickTime,
+          ),
+          // Search button
+          ElevatedButton(
+            onPressed: searchMeetings,
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
+              foregroundColor: MaterialStateProperty.all(Colors.white),
+            ),
+            child: const Text('Szukaj'),
+          ),
+          // Results list
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: filteredMeetings.length,
+              itemBuilder: (context, index) {
+                Meeting meeting = filteredMeetings[index];
+                return ListTile(
+                  title: Text(meeting.name, style: const TextStyle(color: Colors.white)),
+                  subtitle: Text("Organizator: ${meeting.organizerName}", style: const TextStyle(color: Colors.white70)),
+                  onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EventDetailsPage(meeting: meeting),
                         ),
                       );
-                    }).toList(),
-                  );
-                }
-                return const Text('No results found');
+                    },
+                );
               },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Future<void> _pickDate() async {
+  void _pickDate() async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
@@ -211,7 +197,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
     }
   }
 
-  Future<void> _pickTime() async {
+  void _pickTime() async {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: _selectedTime ?? TimeOfDay.now(),
@@ -224,29 +210,18 @@ class _FindMeetPageState extends State<FindMeetPage> {
   }
 
   void searchMeetings() {
-    Query query = FirebaseFirestore.instance.collection('meetings');
-    if (_sportController.text.isNotEmpty) {
-      query = query.where('category', isEqualTo: _sportController.text);
-    }
-    if (_cityController.text.isNotEmpty) {
-      query = query.where('location', isEqualTo: _cityController.text);
-    }
-    if (_selectedLevel != null) {
-      query = query.where('skillLevel', isEqualTo: _selectedLevel);
-    }
-    if (_areFreeSpotsAvailable) {
-      query =
-          query.where('participantsCount', isGreaterThan: 'registeredCount');
-    }
-    if (_selectedDate != null) {
-      query = query.where('date',
-          isEqualTo:
-              "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}");
-    }
-
-    setState(() {
-      _meetingsStream = query.snapshots();
-    });
+    List<Meeting> allMeetings = globalMeetings;
+    filteredMeetings = allMeetings.where((meeting) {
+      bool matchesSport = _selectedSport == null || meeting.category == _selectedSport;
+      bool matchesCity = _cityController.text.isEmpty || meeting.location.toString().contains(_cityController.text);
+      bool matchesLevel = _selectedLevel == null || meeting.skillLevel == _selectedLevel;
+      bool matchesFreeSpots = !_areFreeSpotsAvailable || (meeting.participantsCount > meeting.registeredCount);
+      bool matchesDate = _selectedDate == null || meeting.date == "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+      bool matchesTime = _selectedTime == null || meeting.time == _selectedTime!.format(context);
+      return matchesSport && matchesCity && matchesLevel && matchesFreeSpots && matchesDate && matchesTime;
+    }).toList();
+    print(filteredMeetings.length);
+    setState(() {});
   }
 
   @override

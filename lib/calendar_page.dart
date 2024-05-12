@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/models/meetings.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarPage extends StatefulWidget {
@@ -12,7 +14,7 @@ class CalendarPage extends StatefulWidget {
 class _CalendarPageState extends State<CalendarPage> {
   late DateTime _selectedDay;
   late DateTime _focusedDay;
-  List<String> _selectedEvents = [];
+  List<Meeting> _selectedEvents = [];
   Map<DateTime, List<String>> _allEvents = {};
 
   @override
@@ -33,13 +35,13 @@ class _CalendarPageState extends State<CalendarPage> {
     _selectedEvents = _getEventsForDay(_selectedDay);
   }
 
-  List<String> _getEventsForDay(DateTime day) {
-    List<String> meetings = [];
+  List<Meeting> _getEventsForDay(DateTime day) {
+    List<Meeting> meetings = [];
 
-    for (var meeting in globalMeetings){
-      if(meeting.date == '${day.day}/${day.month}/${day.year}'){
-          meetings.add(meeting.name);
-          print(meeting.name);
+    for (var meeting in globalMeetings) {
+      if (meeting.date == '${day.day}/${day.month}/${day.year}') {
+        meetings.add(meeting);
+        print(meeting.name);
       }
     }
     return meetings;
@@ -100,10 +102,15 @@ class _CalendarPageState extends State<CalendarPage> {
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
-                       print("Kliknięto wydarzenie: ${_selectedEvents[index]}");
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EventDetailsPage(meeting: _selectedEvents[index]),
+                        ),
+                      );
                     },
                     child: ListTile(
-                      title: Text(_selectedEvents[index],
+                      title: Text(_selectedEvents[index].name,
                           style: const TextStyle(color: Colors.white)),
                       tileColor: lightBlue,
                       leading: const Icon(Icons.event, color: Colors.orange),

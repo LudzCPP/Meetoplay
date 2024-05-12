@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/find_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/main_window_card.dart';
@@ -203,6 +204,14 @@ class MenuPage extends StatelessWidget {
                     ],
                   ),
                 ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          EventDetailsPage(meeting: nearestMeeting!),
+                    ),
+                  );
+                },
               ),
             ),
             const Spacer(flex: 2),
