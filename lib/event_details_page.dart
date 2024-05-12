@@ -3,6 +3,7 @@ import 'package:meetoplay/edit_meet_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
 import 'models/meetings.dart';
+import 'models/message_module.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Meeting meeting;
@@ -17,7 +18,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool joined = false;
   @override
   Widget build(BuildContext context) {
-    
+
     void showJoinDialog() {
       showDialog(
         context: context,
@@ -223,7 +224,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 child: const Text('Dołącz do wydarzenia'),
               ),
             ),
-
+            Container(
+              constraints: const BoxConstraints(
+                maxHeight: 390, // Set a maximum height
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(4.0), // Add padding here
+                child: GroupChatPage(meetingId: widget.meeting.meetingId),
+              ),
+            ),
             // Additional Widgets as per existing code
           ],
         ),
