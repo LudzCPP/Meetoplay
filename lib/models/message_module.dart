@@ -1,13 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:meetoplay/models/message_bubble.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/models/message_bubble.dart';
 
 class GroupChatPage extends StatefulWidget {
   final String meetingId;
 
-  const GroupChatPage({Key? key, required this.meetingId}) : super(key: key);
+  const GroupChatPage({super.key, required this.meetingId});
 
   @override
   _GroupChatPageState createState() => _GroupChatPageState();
@@ -17,13 +17,10 @@ class _GroupChatPageState extends State<GroupChatPage> {
   final _messageController = TextEditingController();
   final _auth = FirebaseAuth.instance;
   FirebaseFirestore? _firestore;
-  String? _meetingId;
 
   @override
   void initState() {
     super.initState();
-    // Retrieve meeting ID here or set it when navigating to this page
-    _meetingId = widget.meetingId;
     _firestore = FirebaseFirestore.instance;
   }
 
@@ -32,77 +29,57 @@ class _GroupChatPageState extends State<GroupChatPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Chat grupowy (beta 1.8.0)',
+          'Chat grupowy',
           style: TextStyle(
             color: Colors.white,
             fontSize: 14,
           ),
         ),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            color: Colors.black12,
-            border: Border(
-              top: BorderSide(
-                color: darkBlue,
-                width: 3.0,
-              ),
-            ),
-          ),
-        ),
+        backgroundColor: darkBlue,
+        automaticallyImplyLeading: false,
       ),
       body: Container(
         decoration: const BoxDecoration(
-          color: Colors.grey, // Set your desired background color here
+          color: Colors.black54,
         ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              MessagesStream(firestore: _firestore, meetingId: _meetingId),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0,0,0,5), // Add your desired padding here
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          cursorColor: Colors.lightGreen,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w200, fontSize: 12),
-                          controller: _messageController,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20.0),
-                            hintStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.w200, fontSize: 12),
-                            hintText: 'Napisz wiadomość...',
-                            border: InputBorder.none,
+                child: MessagesStream(firestore: _firestore, meetingId: widget.meetingId),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    Expanded(
+                      child: TextField(
+                        cursorColor: Colors.lightGreen,
+                        style: const TextStyle(color: Colors.white),
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          hintText: 'Napisz wiadomość...',
+                          hintStyle: const TextStyle(color: Colors.white70),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
                           ),
+                          filled: true,
+                          fillColor: Colors.black38,
                         ),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          if (_meetingId != null) {
-                            _firestore?.collection('meetingchat_$_meetingId').add({
-                              'text': _messageController.text,
-                              'sender': _auth.currentUser!.email,
-                              'timestamp': Timestamp.now(),
-                            });
-                            _messageController.clear();
-                          } else {
-                            // Handle case when meeting ID is not available
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 40),
-                          child: const Icon(
-                            Icons.send,
-                            color: Colors.lightGreen,
-                            size: 42.0,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send, color: white, size: 30),
+                      onPressed: () {
+                        _sendMessage();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -110,6 +87,17 @@ class _GroupChatPageState extends State<GroupChatPage> {
         ),
       ),
     );
+  }
+
+  void _sendMessage() {
+    if (_messageController.text.isNotEmpty) {
+      _firestore?.collection('meetingchat_${widget.meetingId}').add({
+        'text': _messageController.text,
+        'sender': _auth.currentUser!.email,
+        'timestamp': Timestamp.now(),
+      });
+      _messageController.clear();
+    }
   }
 }
 

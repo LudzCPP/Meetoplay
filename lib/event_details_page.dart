@@ -18,7 +18,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool joined = false;
   @override
   Widget build(BuildContext context) {
-
     void showJoinDialog() {
       showDialog(
         context: context,
@@ -176,7 +175,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ListView.builder(
               shrinkWrap: true,
               physics:
-                  const NeverScrollableScrollPhysics(), // Wyłącza przewijanie listy uczestników
+                  const NeverScrollableScrollPhysics(),
               itemCount: participants.length,
               itemBuilder: (context, index) {
                 return ListTile(
@@ -211,25 +210,35 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               ),
             ),
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  // Logika dołączania do wydarzenia
-                },
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(orange),
-                  foregroundColor: MaterialStateProperty.all(white),
-                ),
-                child: const Text('Dołącz do wydarzenia'),
-              ),
-            ),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (!joined) {
+                      showJoinDialog();
+                    }
+                    print(joined);
+                  },
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        if (joined) {
+                          return Colors
+                              .green; 
+                        }
+                        return orange;
+                      },
+                    ),
+                    foregroundColor: MaterialStateProperty.all(white),
+                  ),
+                  child: Icon(joined ? Icons.check : Icons.add, color: white),
+                )),
             Container(
               constraints: const BoxConstraints(
-                maxHeight: 390, // Set a maximum height
+                maxHeight: 390,
               ),
               child: Padding(
-                padding: EdgeInsets.all(4.0), // Add padding here
+                padding: const EdgeInsets.all(4.0),
                 child: GroupChatPage(meetingId: widget.meeting.meetingId),
               ),
             ),
@@ -237,17 +246,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if(!joined) {
-            showJoinDialog();
-          } 
-          print(joined);
-        },
-        backgroundColor:
-            joined ? Colors.green : orange, // Wyłącz przycisk, jeśli dołączono
-        child: Icon(joined ? Icons.check : Icons.add, color: white),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     if (!joined) {
+      //       showJoinDialog();
+      //     }
+      //     print(joined);
+      //   },
+      //   backgroundColor:
+      //       joined ? Colors.green : orange, // Wyłącz przycisk, jeśli dołączono
+      //   child: Icon(joined ? Icons.check : Icons.add, color: white),
+      // ),
     );
   }
 }
