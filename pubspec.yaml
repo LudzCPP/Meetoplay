@@ -51,6 +51,10 @@ dependencies:
   shared_preferences: ^2.2.3
   timezone: ^0.9.3
   flutter_rating_bar: ^4.0.1
+<<<<<<< HEAD
+
+=======
+>>>>>>> 30005cdbb543951f35af1f8dadebcd8b600302df
 
 
 dev_dependencies:
