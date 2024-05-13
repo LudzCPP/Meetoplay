@@ -41,6 +41,11 @@ class _MapPageState extends State<MapPage> {
         child: FlutterMap(
           mapController: mapController,
           options: MapOptions(
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.pinchZoom |
+                  InteractiveFlag.drag |
+                  InteractiveFlag.pinchMove,
+            ),
             cameraConstraint: CameraConstraint.contain(
               bounds: LatLngBounds(
                 const LatLng(49.002, 14.122), // SW point of Poland
