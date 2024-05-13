@@ -7,9 +7,11 @@ import 'package:meetoplay/models/meetings.dart';
 
 
 class MeetMarker extends Marker {
+  final Meeting meeting;
+
   MeetMarker({
     required LatLng location,
-    required Meeting meeting,
+    required this.meeting,
     required Color color,
     double size = 50.0,
   }) : super(
@@ -51,4 +53,6 @@ class MeetMarker extends Marker {
             ),
           ),
         );
+
+  
 }

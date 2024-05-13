@@ -128,7 +128,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
           ),
           // Date and time pickers
           ListTile(
-            title: const Text("Wybierz datę", style: TextStyle(color: Colors.white)),
+            title: const Text("Wybierz datę",
+                style: TextStyle(color: Colors.white)),
             subtitle: Text(
               _selectedDate == null
                   ? "Nie wybrano daty"
@@ -138,7 +139,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
             onTap: _pickDate,
           ),
           ListTile(
-            title: const Text("Wybierz godzinę", style: TextStyle(color: Colors.white)),
+            title: const Text("Wybierz godzinę",
+                style: TextStyle(color: Colors.white)),
             subtitle: Text(
               _selectedTime == null
                   ? "Nie wybrano godziny"
@@ -151,7 +153,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
           ElevatedButton(
             onPressed: searchMeetings,
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
+              backgroundColor:
+                  MaterialStateProperty.all(specialActionButtonColor),
               foregroundColor: MaterialStateProperty.all(Colors.white),
             ),
             child: const Text('Szukaj'),
@@ -164,16 +167,18 @@ class _FindMeetPageState extends State<FindMeetPage> {
               itemBuilder: (context, index) {
                 Meeting meeting = filteredMeetings[index];
                 return ListTile(
-                  title: Text(meeting.name, style: const TextStyle(color: Colors.white)),
-                  subtitle: Text("Organizator: ${meeting.organizerName}", style: const TextStyle(color: Colors.white70)),
+                  title: Text(meeting.name,
+                      style: const TextStyle(color: Colors.white)),
+                  subtitle: Text("Organizator: ${meeting.organizerName}",
+                      style: const TextStyle(color: Colors.white70)),
                   onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EventDetailsPage(meeting: meeting),
-                        ),
-                      );
-                    },
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EventDetailsPage(meeting: meeting),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -184,11 +189,25 @@ class _FindMeetPageState extends State<FindMeetPage> {
   }
 
   void _pickDate() async {
-    final DateTime? pickedDate = await showDatePicker(
+    DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2025),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: specialActionButtonColor,
+              onPrimary: white,
+              surface: lightBlue,
+              onSurface: white,
+            ),
+            dialogBackgroundColor: darkBlue,
+          ),
+          child: child!,
+        );
+      },
     );
     if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
@@ -212,13 +231,25 @@ class _FindMeetPageState extends State<FindMeetPage> {
   void searchMeetings() {
     List<Meeting> allMeetings = globalMeetings;
     filteredMeetings = allMeetings.where((meeting) {
-      bool matchesSport = _selectedSport == null || meeting.category == _selectedSport;
-      bool matchesCity = _cityController.text.isEmpty || meeting.location.toString().contains(_cityController.text);
-      bool matchesLevel = _selectedLevel == null || meeting.skillLevel == _selectedLevel;
-      bool matchesFreeSpots = !_areFreeSpotsAvailable || (meeting.participantsCount > meeting.registeredCount);
-      bool matchesDate = _selectedDate == null || meeting.date == "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
-      bool matchesTime = _selectedTime == null || meeting.time == _selectedTime!.format(context);
-      return matchesSport && matchesCity && matchesLevel && matchesFreeSpots && matchesDate && matchesTime;
+      bool matchesSport =
+          _selectedSport == null || meeting.category == _selectedSport;
+      bool matchesCity = _cityController.text.isEmpty ||
+          meeting.location.toString().contains(_cityController.text);
+      bool matchesLevel =
+          _selectedLevel == null || meeting.skillLevel == _selectedLevel;
+      bool matchesFreeSpots = !_areFreeSpotsAvailable ||
+          (meeting.participantsCount > meeting.registeredCount);
+      bool matchesDate = _selectedDate == null ||
+          meeting.date ==
+              "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";
+      bool matchesTime = _selectedTime == null ||
+          meeting.time == _selectedTime!.format(context);
+      return matchesSport &&
+          matchesCity &&
+          matchesLevel &&
+          matchesFreeSpots &&
+          matchesDate &&
+          matchesTime;
     }).toList();
     print(filteredMeetings.length);
     setState(() {});

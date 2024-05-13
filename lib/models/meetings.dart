@@ -32,6 +32,7 @@ class Meeting {
     required this.participants,
     required this.ownerId,
   });
+
 }
 
 class Participant {
