@@ -137,7 +137,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                       initialRating: participants[index].rating.toDouble(),
                       minRating: 1,
                       direction: Axis.horizontal,
-                      allowHalfRating: true,
+                      allowHalfRating: false,
                       itemCount: 5,
                       itemSize: 20.0,
                       itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -146,7 +146,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         color: Colors.amber,
                       ),
                       onRatingUpdate: (rating) {
-                        // Tutaj możesz zaimplementować logikę zapisu oceny do bazy danych lub gdziekolwiek jest wymagane
+                        
                       },
                     ),
                   ],

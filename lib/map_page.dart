@@ -78,57 +78,56 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
- void _showFilterDialog() {
-  String? tempSelectedSport = selectedSport; // tymczasowa zmienna do przechowywania wyboru
+  void _showFilterDialog() {
+    String? tempSelectedSport =
+        selectedSport; // tymczasowa zmienna do przechowywania wyboru
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setStateDialog) {
-          return AlertDialog(
-            title: const Text('Wybierz sport'),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: sportsList.map((String sport) {
-                  return ListTile(
-                    title: Text(sport),
-                    selected: tempSelectedSport == sport,
-                    selectedTileColor: Colors.blue.shade100,
-                    onTap: () {
-                      setStateDialog(() {
-                        tempSelectedSport = sport;
-                      });
-                    },
-                  );
-                }).toList(),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Wybierz sport'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: [
+                    ...sportsList.map((String sport) {
+                      return ListTile(
+                        title: Text(sport),
+                        selected: tempSelectedSport == sport,
+                        selectedTileColor: Colors.blue.shade100,
+                        onTap: () {
+                          setStateDialog(() {
+                            if (tempSelectedSport == sport) {
+                              tempSelectedSport = null;
+                            } else {
+                              tempSelectedSport = sport;
+                            }
+                          });
+                        },
+                      );
+                    }),
+                  ],
+                ),
               ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Anuluj'),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    selectedSport = tempSelectedSport;
-                  });
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-
-
-
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedSport = tempSelectedSport;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   List<Marker> _filteredMarkers() {
     if (selectedSport == null) return globalMarkers;
