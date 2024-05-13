@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -16,17 +17,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _cityController = TextEditingController();
+  final TextEditingController _birthdateController = TextEditingController();
+
   DateTime? _birthdate;
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Wybierz datę urodzenia';
+    // Format daty, który można dostosować
+    return DateFormat('dd-MM-yyyy').format(date);
+  }
 
   void _registerUser() async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential =
+            await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -39,13 +50,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'birthdate': _birthdate?.toIso8601String(),
         });
 
-        Fluttertoast.showToast(msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
+        Fluttertoast.showToast(
+            msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
         Navigator.pop(context);
       } catch (e) {
         Fluttertoast.showToast(msg: "Błąd rejestracji: $e");
       }
     } else {
       Fluttertoast.showToast(msg: "Proszę poprawić błędy w formularzu.");
+    }
+  }
+
+  void _selectBirthdate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _birthdate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _birthdate) {
+      setState(() {
+        _birthdate = picked;
+        _birthdateController.text = DateFormat('dd-MM-yyyy').format(picked);
+      });
     }
   }
 
@@ -161,24 +188,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   return null;
                 },
               ),
-              TextButton(
-                onPressed: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null && picked != _birthdate) {
-                    setState(() {
-                      _birthdate = picked;
-                    });
-                  }
-                },
-                child: Text(
-                  _birthdate == null ? 'Wybierz datę urodzenia' : 'Data urodzenia: ${_birthdate!.toLocal()}'.split(' ')[0],
-                  style: const TextStyle(color: Colors.black),
+              TextFormField(
+                controller: _birthdateController,
+                decoration: const InputDecoration(
+                  labelText: 'Data urodzenia',
+                  labelStyle: TextStyle(color: Colors.black),
+                  suffixIcon: Icon(Icons.calendar_today), // Ikona kalendarza
                 ),
+                readOnly:
+                    true, // Pole tylko do odczytu, aby uniknąć wpisywania tekstu
+                onTap: () {
+                  _selectBirthdate(context); // Wywołanie selektora daty
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Proszę wybrać datę urodzenia';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(
