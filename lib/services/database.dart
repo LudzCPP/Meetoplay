@@ -146,15 +146,7 @@ class DatabaseService {
     DocumentReference meetingRef = meetingsCollection.doc(meetingId);
     try {
       await meetingRef.update({
-<<<<<<< HEAD
-        'participants': participants
-            .map((participant) => {
-                  'name': participant.name, 
-                  'rating': participant.rating,
-                  'userId': participant.userId
-                })
-            .toList(),
-=======
+
         'participants': FieldValue.arrayUnion([
           {
             'name': newParticipant.name,
@@ -162,7 +154,6 @@ class DatabaseService {
             'userId': newParticipant.userId
           }
         ]),
->>>>>>> 30005cdbb543951f35af1f8dadebcd8b600302df
       });
     } catch (e) {
       print('Błąd podczas dodawania uczestnika: $e');
