@@ -17,6 +17,14 @@ class _HomePageState extends State<HomePage> {
 
   final pageOptions = [const MenuPage(), const CalendarPage()];
 
+  Future<void> _refreshPage() async {
+    await Future.delayed(
+        const Duration(seconds: 2)); // Symulacja opóźnienia przy odświeżaniu
+    setState(() {
+      // Tutaj możesz wywołać dodatkowe funkcje do załadowania danych lub zresetować stan strony
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
