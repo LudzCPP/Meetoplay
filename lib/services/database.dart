@@ -140,4 +140,49 @@ class DatabaseService {
       print(e.toString());
     }
   }
+
+  Future updateMeetingParticipants(
+      String meetingId, List<Participant> participants) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    try {
+      await meetingRef.update({
+        'participants': participants
+            .map((participant) => {
+                  'name': participant.name,
+                  'rating': participant.rating,
+                  'userId': participant.userId
+                })
+            .toList(),
+      });
+    } catch (e) {
+      print('Błąd podczas aktualizacji uczestników spotkania: $e');
+    }
+  }
+
+  Future<bool> isUserParticipant(String meetingId, String userId) async {
+  try {
+    // Pobierz dokument wydarzenia
+    DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
+    
+    // Sprawdź czy dokument istnieje i czy zawiera listę uczestników
+    if (meetingDoc.exists) {
+      // Pobierz listę uczestników z dokumentu
+      List<dynamic> participants = meetingDoc['participants'];
+
+      // Sprawdź czy użytkownik znajduje się na liście uczestników
+      for (var participant in participants) {
+        if (participant['userId'] == userId) {
+          // Zwróć true jeśli użytkownik jest uczestnikiem wydarzenia
+          return true;
+        }
+      }
+    }
+  } catch (e) {
+    print('Błąd podczas sprawdzania uczestnictwa użytkownika: $e');
+  }
+  
+  // Zwróć false jeśli użytkownik nie jest uczestnikiem wydarzenia lub wystąpił błąd
+  return false;
+}
+
 }
