@@ -8,8 +8,6 @@ import "database.dart";
 import "package:meetoplay/main.dart";
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
-
 
 
  class PushNotifications {
@@ -53,7 +51,7 @@ import 'package:flutter_native_timezone/flutter_native_timezone.dart';
       print("failed to get device token");
       if (maxRetires > 0) {
         print("try after 10 sec");
-        await Future.delayed(Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 10));
         return getDeviceToken(maxRetires: maxRetires - 1);
       } else {
         return null;
@@ -86,9 +84,9 @@ import 'package:flutter_native_timezone/flutter_native_timezone.dart';
     );
     final DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
-      onDidReceiveLocalNotification: (id, title, body, payload) => null,
+      onDidReceiveLocalNotification: (id, title, body, payload) {},
     );
-    final LinuxInitializationSettings initializationSettingsLinux =
+    const LinuxInitializationSettings initializationSettingsLinux =
         LinuxInitializationSettings(defaultActionName: 'Open notification');
     final InitializationSettings initializationSettings =
         InitializationSettings(

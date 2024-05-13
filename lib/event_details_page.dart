@@ -281,6 +281,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 try {
                   User? currentUser = FirebaseAuth.instance.currentUser;
                   if (currentUser != null) {
+                    Participant currentParticipant = participants.firstWhere(
+                        (p) => p.userId == currentUser.uid,
+                        orElse: () => Participant(
+                            name: 'Anonim',
+                            rating: 0,
+                            userId: currentUser
+                                .uid) // lub jakąś inną domyślną wartość
+                        );
+
                     // Usuń uczestnika z listy lokalnej
                     setState(() {
                       participants.removeWhere((participant) =>
@@ -291,9 +300,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
                     // Aktualizacja Firestore
                     await DatabaseService(uid: currentUser.uid)
-                        .updateMeetingParticipants(
+                        .removeMeetingParticipant(
                       widget.meeting.meetingId,
-                      participants,
+                      currentParticipant, // Przekazanie pełnego obiektu uczestnika
                     );
                   }
                   Navigator.of(context).pop(); // Zamknij okno dialogowe
@@ -345,9 +354,10 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
                     // Aktualizacja Firestore
                     await DatabaseService(uid: currentUser.uid)
-                        .updateMeetingParticipants(
+                        .addMeetingParticipant(
+                      // Użyj nowej metody dodającej uczestnika
                       widget.meeting.meetingId,
-                      participants,
+                      newParticipant,
                     );
                   }
                   Navigator.of(context).pop(); // Zamknij okno dialogowe

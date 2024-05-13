@@ -193,12 +193,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Data urodzenia',
                   labelStyle: TextStyle(color: Colors.black),
-                  suffixIcon: Icon(Icons.calendar_today), // Ikona kalendarza
+                  suffixIcon: Icon(Icons.calendar_today),
                 ),
                 readOnly:
-                    true, // Pole tylko do odczytu, aby uniknąć wpisywania tekstu
+                    true,
                 onTap: () {
-                  _selectBirthdate(context); // Wywołanie selektora daty
+                  _selectBirthdate(context);
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {

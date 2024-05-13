@@ -141,48 +141,66 @@ class DatabaseService {
     }
   }
 
-  Future updateMeetingParticipants(
-      String meetingId, List<Participant> participants) async {
+  Future<void> addMeetingParticipant(
+      String meetingId, Participant newParticipant) async {
     DocumentReference meetingRef = meetingsCollection.doc(meetingId);
     try {
       await meetingRef.update({
-        'participants': participants
-            .map((participant) => {
-                  'name': participant.name,
-                  'rating': participant.rating,
-                  'userId': participant.userId
-                })
-            .toList(),
+        'participants': FieldValue.arrayUnion([
+          {
+            'name': newParticipant.name,
+            'rating': newParticipant.rating,
+            'userId': newParticipant.userId
+          }
+        ]),
       });
     } catch (e) {
-      print('Błąd podczas aktualizacji uczestników spotkania: $e');
+      print('Błąd podczas dodawania uczestnika: $e');
     }
   }
 
-  Future<bool> isUserParticipant(String meetingId, String userId) async {
+  Future<void> removeMeetingParticipant(String meetingId, Participant participant) async {
+  DocumentReference meetingRef = meetingsCollection.doc(meetingId);
   try {
-    // Pobierz dokument wydarzenia
-    DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
-    
-    // Sprawdź czy dokument istnieje i czy zawiera listę uczestników
-    if (meetingDoc.exists) {
-      // Pobierz listę uczestników z dokumentu
-      List<dynamic> participants = meetingDoc['participants'];
-
-      // Sprawdź czy użytkownik znajduje się na liście uczestników
-      for (var participant in participants) {
-        if (participant['userId'] == userId) {
-          // Zwróć true jeśli użytkownik jest uczestnikiem wydarzenia
-          return true;
+    await meetingRef.update({
+      'participants': FieldValue.arrayRemove([
+        {
+          'name': participant.name,
+          'rating': participant.rating,
+          'userId': participant.userId
         }
-      }
-    }
+      ]),
+    });
   } catch (e) {
-    print('Błąd podczas sprawdzania uczestnictwa użytkownika: $e');
+    print('Błąd podczas usuwania uczestnika: $e');
   }
-  
-  // Zwróć false jeśli użytkownik nie jest uczestnikiem wydarzenia lub wystąpił błąd
-  return false;
 }
 
+
+  Future<bool> isUserParticipant(String meetingId, String userId) async {
+    try {
+      // Pobierz dokument wydarzenia
+      DocumentSnapshot meetingDoc =
+          await meetingsCollection.doc(meetingId).get();
+
+      // Sprawdź czy dokument istnieje i czy zawiera listę uczestników
+      if (meetingDoc.exists) {
+        // Pobierz listę uczestników z dokumentu
+        List<dynamic> participants = meetingDoc['participants'];
+
+        // Sprawdź czy użytkownik znajduje się na liście uczestników
+        for (var participant in participants) {
+          if (participant['userId'] == userId) {
+            // Zwróć true jeśli użytkownik jest uczestnikiem wydarzenia
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      print('Błąd podczas sprawdzania uczestnictwa użytkownika: $e');
+    }
+
+    // Zwróć false jeśli użytkownik nie jest uczestnikiem wydarzenia lub wystąpił błąd
+    return false;
+  }
 }
