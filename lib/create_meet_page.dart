@@ -2,12 +2,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/services/database.dart';
+import 'package:meetoplay/services/notification.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 // Import Meeting class here
 import 'package:meetoplay/models/meetings.dart';
@@ -71,6 +75,37 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       );
     });
   }
+
+//   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+//   FlutterLocalNotificationsPlugin();
+//   void scheduleNotification(String eventName, DateTime eventDate) async {
+  
+//   tz.TZDateTime scheduledNotificationDateTime =
+//       tz.TZDateTime.from(eventDate.subtract(Duration(minutes: -1)), tz.local); //coś nie tak ze strefami jest
+//       print(scheduledNotificationDateTime);
+//       print(tz.TZDateTime.now(tz.local));
+//       print(tz.local);
+
+//   var androidDetails = const AndroidNotificationDetails(
+//     'channel_id',
+//     'channel_name',
+//     channelDescription: 'channel_description',
+//     importance: Importance.high,
+//     priority: Priority.high,
+//     ticker: 'ticker'
+//   );
+//   var notificationDetails = NotificationDetails(android: androidDetails);
+
+//   await flutterLocalNotificationsPlugin.zonedSchedule(
+//     0,
+//     'Przypomnienie o wydarzeniu',
+//     'Spotkanie "$eventName" odbędzie się za godzinę',
+//     scheduledNotificationDateTime,
+//     notificationDetails,
+//     uiLocalNotificationDateInterpretation:
+//         UILocalNotificationDateInterpretation.absoluteTime,
+//   );
+// }
 
   Future<void> _searchAndUpdateLocation(String address) async {
     try {
@@ -498,11 +533,24 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                        //  if (_formKey.currentState!.validate()) {
-                        //   DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
-                        //   PushNotifications.scheduleNotification(_eventNameController.text, eventDateTime);
+                         if (_formKey.currentState!.validate()) {
+                          String dateTimeString = '${_dateController.text}/${_timeController.text}';
+                          List<String> dateTimeParts = dateTimeString.split('/');
+                          String formattedDate =
+                              '${dateTimeParts[1].padLeft(2, '0')}/${dateTimeParts[0].padLeft(2, '0')}/${dateTimeParts[2]}';
+                          String formattedTime = dateTimeParts[3].padLeft(5, '0');
+                          String formattedDateTimeString = '$formattedDate $formattedTime';
 
-                        //}
+                          // Parsowanie do obiektu DateTime
+                          DateTime meetingDateTime =
+                              DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
+                          //DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
+                          //scheduleNotification(_eventNameController.text, meetingDateTime);
+                          //var psh = PushNotifications();
+
+                          //PushNotifications.scheduleNotification(_eventNameController.text, meetingDateTime);
+
+                        }
                       }
                     },
                     style: ButtonStyle(

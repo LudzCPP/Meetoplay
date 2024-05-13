@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:meetoplay/services/notification.dart';
+import 'package:meetoplay/services/notification_service.dart';
 import 'package:meetoplay/wrapper.dart';
 import 'global_variables.dart';
 import 'firebase_options.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -41,17 +43,19 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  tz.initializeTimeZones();
+  
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   await PushNotifications.init();
+ 
+  //PushNotifications.scheduleNotification(eventName, eventDate)
 
-  if (!kIsWeb) {
-    await PushNotifications.localNotiInit();
-  }
+
+  await PushNotifications.localNotiInit();
+
 
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -90,6 +94,10 @@ void main() async {
     });
   }
 
+   var date = DateTime.now();
+  PushNotifications().scheduleNotification('test', date);
+  // NotificationService().initializeNotification();
+  // NotificationService().showNotification(1, 'Hi Guys', 'I am Mahdi');
 
   runApp(const MyApp());
 }

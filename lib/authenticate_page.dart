@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:meetoplay/register_page.dart';
 
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({super.key});
@@ -108,7 +109,12 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
               height: 20,
             ),
             ElevatedButton(
-              onPressed: _registerWithEmail,
+              onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                            );
+                        },
               child: const Text('Rejestracja przez email'),
             ),
             const SizedBox(height: 20),

@@ -6,9 +6,13 @@ import 'package:meetoplay/menu_page.dart';
 import "auth.dart";
 import "database.dart";
 import "package:meetoplay/main.dart";
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 
-class PushNotifications {
+
+
+ class PushNotifications {
   static final _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -129,20 +133,28 @@ class PushNotifications {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-void  scheduleNotification(String eventName, DateTime eventDate) async {
-  var scheduledNotificationDateTime =
-      tz.TZDateTime.from(eventDate.subtract(Duration(hours: 1)), tz.local);
+Future scheduleNotification(String eventName, DateTime eventDate) async {
+  tz.initializeTimeZones();
+  var location = tz.getLocation('Europe/Warsaw');
+  tz.setLocalLocation(location);
 
-  var androidDetails = AndroidNotificationDetails(
+  var scheduledNotificationDateTime =
+      tz.TZDateTime.from(eventDate.subtract(const Duration(seconds: -30)), tz.local);
+
+      print(scheduledNotificationDateTime);
+      print(tz.TZDateTime.now(tz.local));
+
+  var androidDetails = const AndroidNotificationDetails(
     'channel_id',
     'channel_name',
     channelDescription: 'channel_description',
-    importance: Importance.high,
+    importance: Importance.max,
     priority: Priority.high,
+    ticker: 'ticker'
   );
   var notificationDetails = NotificationDetails(android: androidDetails);
 
-  await flutterLocalNotificationsPlugin.zonedSchedule(
+  await _flutterLocalNotificationsPlugin.zonedSchedule(
     0,
     'Przypomnienie o wydarzeniu',
     'Spotkanie "$eventName" odbędzie się za godzinę',
@@ -151,6 +163,7 @@ void  scheduleNotification(String eventName, DateTime eventDate) async {
     androidAllowWhileIdle: true,
     uiLocalNotificationDateInterpretation:
         UILocalNotificationDateInterpretation.absoluteTime,
+    payload: "data",
   );
 }
 }
