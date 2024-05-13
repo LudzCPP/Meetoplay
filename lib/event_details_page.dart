@@ -180,27 +180,73 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
       child: ElevatedButton(
-        onPressed: () {
-          if (!joined) {
-            showJoinDialog();
-          }
-          print(joined);
-        },
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (joined) {
-                return Colors.green;
-              }
-              return orange;
-            },
-          ),
-          foregroundColor: MaterialStateProperty.all(white),
+      onPressed: () {
+        if (joined) {
+          showLeaveDialog(); // Pokaż dialog potwierdzający opuszczenie wydarzenia
+        } else {
+          showJoinDialog(); // Pokaż dialog potwierdzający dołączenie do wydarzenia
+        }
+      },
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) {
+            if (joined) {
+              return Colors.red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
+            }
+            return orange;
+          },
         ),
-        child: Icon(joined ? Icons.check : Icons.add, color: white),
+        foregroundColor: MaterialStateProperty.all(white),
       ),
+      child: Icon(joined ? Icons.remove : Icons.add, color: white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
+    ),
     );
   }
+
+  void showLeaveDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Potwierdzenie"),
+        content: const Text("Czy na pewno chcesz opuścić to wydarzenie?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Anuluj"),
+            onPressed: () {
+              Navigator.of(context).pop(); // Zamknij okno dialogowe
+            },
+          ),
+          TextButton(
+            child: const Text("Opuść"),
+            onPressed: () async {
+              try {
+                User? currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser != null) {
+                  // Usuń uczestnika z listy lokalnej
+                  setState(() {
+                    participants.removeWhere((participant) => participant.userId == currentUser.uid);
+                    joined = false; // Zaktualizuj stan dołączenia
+                    print("Uczestnicy po usunięciu: ${participants.length}");
+                  });
+
+                  // Aktualizacja Firestore
+                  await DatabaseService(uid: currentUser.uid).updateMeetingParticipants(
+                    widget.meeting.meetingId,
+                    participants,
+                  );
+                }
+                Navigator.of(context).pop(); // Zamknij okno dialogowe
+              } catch (e) {
+                print("Error leaving meeting: $e");
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void showJoinDialog() {
     showDialog(
