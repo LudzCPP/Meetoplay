@@ -148,7 +148,7 @@ class DatabaseService {
       await meetingRef.update({
         'participants': participants
             .map((participant) => {
-                  'name': participant.name,
+                  'name': participant.name, 
                   'rating': participant.rating,
                   'userId': participant.userId
                 })

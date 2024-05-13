@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -29,7 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
+
+        
         );
+        userCredential.user!.updateDisplayName(_nicknameController.text);
 
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'nickname': _nicknameController.text.trim(),
