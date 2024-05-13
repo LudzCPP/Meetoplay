@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/main.dart';
 import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/models/meetings.dart';
-
 
 class MeetMarker extends Marker {
   final Meeting meeting;
@@ -25,20 +25,73 @@ class MeetMarker extends Marker {
                 context: navigatorKey.currentContext!,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text(meeting.name),
-                    content: Text(meeting.location.toString()),
+                    backgroundColor: darkBlue,
+                    title: Text(
+                      meeting.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    content: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: const BoxDecoration(
+                        color: orange,
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(10)),
+                      ),
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            color:
+                                Colors.white,
+                            fontSize: 16,
+                          ),
+                          children: <TextSpan>[
+                            TextSpan(
+                                text:
+                                    'Data: ${meeting.date}\n'),
+                            TextSpan(
+                                text:
+                                    'Czas: ${meeting.time}\n'),
+                            TextSpan(
+                              text:
+                                  'Sport: ${meeting.category}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight
+                                    .bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => EventDetailsPage(meeting: meeting),
+                              builder: (context) =>
+                                  EventDetailsPage(meeting: meeting),
                             ),
                           );
                         },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              specialActionButtonColor,
+                        ),
                         child: const Text('Sprawdź'),
                       ),
                     ],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          10),
+                      side: const BorderSide(
+                          color: Colors.white,
+                          width: 2),
+                    ),
                   );
                 },
               );
@@ -53,6 +106,4 @@ class MeetMarker extends Marker {
             ),
           ),
         );
-
-  
 }
