@@ -22,6 +22,7 @@ class MenuPage extends StatelessWidget {
 
       // Aktualna data i czas
       DateTime now = DateTime.now();
+      //print("${now.hour}, ${now.minute}");
 
       // Znajdź najbliższe wydarzenie
       Meeting? nearestMeeting;
@@ -32,14 +33,14 @@ class MenuPage extends StatelessWidget {
         String dateTimeString = '${meeting.date}/${meeting.time}';
         List<String> dateTimeParts = dateTimeString.split('/');
         String formattedDate =
-            '${dateTimeParts[1].padLeft(2, '0')}/${dateTimeParts[0].padLeft(2, '0')}/${dateTimeParts[2]}';
+            '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
         String formattedTime = dateTimeParts[3].padLeft(5, '0');
         String formattedDateTimeString = '$formattedDate $formattedTime';
 
         // Parsowanie do obiektu DateTime
         DateTime meetingDateTime =
             DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
-
+        
         if (meetingDateTime.isAfter(now)) {
           Duration difference = meetingDateTime.difference(now);
           if (nearestDuration == null || difference < nearestDuration) {

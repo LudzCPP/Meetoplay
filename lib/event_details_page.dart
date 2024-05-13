@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:meetoplay/services/database.dart';
 import 'models/meetings.dart';
 import 'models/message_module.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Meeting meeting;
@@ -54,51 +55,66 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void checkUserJoinStatus() async {
-  try {
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      bool isParticipant = await DatabaseService(uid: currentUser.uid)
-          .isUserParticipant(widget.meeting.meetingId, currentUser.uid);
-      // Aktualizujemy stan dołączenia na podstawie wyniku
-      setState(() {
-        joined = isParticipant;
-      });
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        bool isParticipant = await DatabaseService(uid: currentUser.uid)
+            .isUserParticipant(widget.meeting.meetingId, currentUser.uid);
+        // Aktualizujemy stan dołączenia na podstawie wyniku
+        setState(() {
+          joined = isParticipant;
+        });
+      }
+    } catch (e) {
+      print("Error checking user join status: $e");
     }
-  } catch (e) {
-    print("Error checking user join status: $e");
   }
-}
 
   Widget buildChatSection(String meetingId) {
-  return Container(
-    constraints: const BoxConstraints(maxHeight: 390),
-    padding: const EdgeInsets.all(4.0),
-    child: GroupChatPage(meetingId: meetingId), // Przekazujesz meetingId do widgetu czatu
-  );
-}
-
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 390),
+      padding: const EdgeInsets.all(4.0),
+      child: GroupChatPage(
+          meetingId: meetingId), // Przekazujesz meetingId do widgetu czatu
+    );
+  }
 
   Widget buildMeetingDetails() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        buildDetailRow(Icons.sports_soccer, 'Sport: ${widget.meeting.category}'),
+        buildDetailRow(
+            Icons.sports_soccer, 'Sport: ${widget.meeting.category}'),
+        const SizedBox(
+          height: 10,
+        ),
         buildDetailRow(Icons.bar_chart, 'Poziom: ${widget.meeting.skillLevel}'),
+        const SizedBox(
+          height: 10,
+        ),
         buildLocation(),
-        buildDetailRow(Icons.calendar_today, 'Data: ${widget.meeting.date} ${widget.meeting.time}'),
-        Text('Maksymalna liczba uczestników: ${widget.meeting.participantsCount}',
-            style: const TextStyle(fontSize: 18, color: white, fontWeight: FontWeight.bold)),
+        const SizedBox(
+          height: 10,
+        ),
+        buildDetailRow(Icons.calendar_today,
+            'Data: ${widget.meeting.date} ${widget.meeting.time}'),
+        Text(
+            'Maksymalna liczba uczestników: ${widget.meeting.participantsCount}',
+            style: const TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold)),
       ],
     );
   }
 
   Widget buildParticipantsList() {
-    return StreamBuilder<DocumentSnapshot>(
+  return SizedBox(
+    height: 200, // Ustawiamy maksymalną wysokość kontenera
+    child: StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data!.exists) {
           var data = snapshot.data!.data() as Map<String, dynamic>;
-          participants = List<Participant>.from(
+          List<Participant> participants = List<Participant>.from(
             (data['participants'] as List).map((item) => Participant(
               name: item['name'],
               rating: item['rating'],
@@ -107,13 +123,34 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           );
           return ListView.builder(
             shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemCount: participants.length,
             itemBuilder: (context, index) {
               return ListTile(
-                leading: const Icon(Icons.person, color: white),
-                title: Text(participants[index].name, style: const TextStyle(color: white, fontWeight: FontWeight.bold)),
-                subtitle: Text('Ocena: ${participants[index].rating}', style: const TextStyle(color: white)),
+                leading: const Icon(Icons.person, color: Colors.white),
+                title: Text(participants[index].name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Ocena: ${participants[index].rating}', style: const TextStyle(color: Colors.white)),
+                    RatingBar.builder(
+                      initialRating: participants[index].rating.toDouble(),
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 5,
+                      itemSize: 20.0,
+                      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) => const Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      onRatingUpdate: (rating) {
+                        
+                      },
+                    ),
+                  ],
+                ),
               );
             },
           );
@@ -122,15 +159,18 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         }
         return const CircularProgressIndicator();
       },
-    );
-  }
+    ),
+  );
+}
 
   Widget buildDetailRow(IconData icon, String text) {
     return Row(
       children: [
         Icon(icon, color: white),
         const SizedBox(width: 8),
-        Text(text, style: const TextStyle(fontSize: 18, color: white, fontWeight: FontWeight.bold)),
+        Text(text,
+            style: const TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -141,12 +181,23 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         const Icon(Icons.location_on, color: Colors.white),
         const SizedBox(width: 8),
         FutureBuilder<String>(
-          future: getAddressFromLatLng(widget.meeting.location.latitude, widget.meeting.location.longitude),
+          future: getAddressFromLatLng(widget.meeting.location.latitude,
+              widget.meeting.location.longitude),
           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
             if (snapshot.hasData) {
-              return Flexible(child: Text('Miejsce: ${snapshot.data}', style: const TextStyle(fontSize: 18, color: white, fontWeight: FontWeight.bold)));
+              return Flexible(
+                  child: Text('Miejsce: ${snapshot.data}',
+                      style: const TextStyle(
+                          fontSize: 18,
+                          color: white,
+                          fontWeight: FontWeight.bold)));
             } else if (snapshot.hasError) {
-              return Flexible(child: Text("Błąd: ${snapshot.error}", style: const TextStyle(fontSize: 18, color: white, fontWeight: FontWeight.bold)));
+              return Flexible(
+                  child: Text("Błąd: ${snapshot.error}",
+                      style: const TextStyle(
+                          fontSize: 18,
+                          color: white,
+                          fontWeight: FontWeight.bold)));
             }
             return const CircularProgressIndicator();
           },
@@ -180,73 +231,78 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
       child: ElevatedButton(
-      onPressed: () {
-        if (joined) {
-          showLeaveDialog(); // Pokaż dialog potwierdzający opuszczenie wydarzenia
-        } else {
-          showJoinDialog(); // Pokaż dialog potwierdzający dołączenie do wydarzenia
-        }
-      },
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (joined) {
-              return Colors.red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
-            }
-            return orange;
-          },
+        onPressed: () {
+          if (joined) {
+            showLeaveDialog(); // Pokaż dialog potwierdzający opuszczenie wydarzenia
+          } else {
+            showJoinDialog(); // Pokaż dialog potwierdzający dołączenie do wydarzenia
+          }
+        },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
+              if (joined) {
+                return Colors
+                    .red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
+              }
+              return orange;
+            },
+          ),
+          foregroundColor: MaterialStateProperty.all(white),
         ),
-        foregroundColor: MaterialStateProperty.all(white),
+        child: Icon(joined ? Icons.remove : Icons.add,
+            color:
+                white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
       ),
-      child: Icon(joined ? Icons.remove : Icons.add, color: white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
-    ),
     );
   }
 
   void showLeaveDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("Potwierdzenie"),
-        content: const Text("Czy na pewno chcesz opuścić to wydarzenie?"),
-        actions: <Widget>[
-          TextButton(
-            child: const Text("Anuluj"),
-            onPressed: () {
-              Navigator.of(context).pop(); // Zamknij okno dialogowe
-            },
-          ),
-          TextButton(
-            child: const Text("Opuść"),
-            onPressed: () async {
-              try {
-                User? currentUser = FirebaseAuth.instance.currentUser;
-                if (currentUser != null) {
-                  // Usuń uczestnika z listy lokalnej
-                  setState(() {
-                    participants.removeWhere((participant) => participant.userId == currentUser.uid);
-                    joined = false; // Zaktualizuj stan dołączenia
-                    print("Uczestnicy po usunięciu: ${participants.length}");
-                  });
-
-                  // Aktualizacja Firestore
-                  await DatabaseService(uid: currentUser.uid).updateMeetingParticipants(
-                    widget.meeting.meetingId,
-                    participants,
-                  );
-                }
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Potwierdzenie"),
+          content: const Text("Czy na pewno chcesz opuścić to wydarzenie?"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Anuluj"),
+              onPressed: () {
                 Navigator.of(context).pop(); // Zamknij okno dialogowe
-              } catch (e) {
-                print("Error leaving meeting: $e");
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+              },
+            ),
+            TextButton(
+              child: const Text("Opuść"),
+              onPressed: () async {
+                try {
+                  User? currentUser = FirebaseAuth.instance.currentUser;
+                  if (currentUser != null) {
+                    // Usuń uczestnika z listy lokalnej
+                    setState(() {
+                      participants.removeWhere((participant) =>
+                          participant.userId == currentUser.uid);
+                      joined = false; // Zaktualizuj stan dołączenia
+                      print("Uczestnicy po usunięciu: ${participants.length}");
+                    });
+
+                    // Aktualizacja Firestore
+                    await DatabaseService(uid: currentUser.uid)
+                        .updateMeetingParticipants(
+                      widget.meeting.meetingId,
+                      participants,
+                    );
+                  }
+                  Navigator.of(context).pop(); // Zamknij okno dialogowe
+                } catch (e) {
+                  print("Error leaving meeting: $e");
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void showJoinDialog() {
     showDialog(
@@ -254,7 +310,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Potwierdzenie"),
-          content: const Text("Czy na pewno chcesz dołączyć do tego wydarzenia?"),
+          content:
+              const Text("Czy na pewno chcesz dołączyć do tego wydarzenia?"),
           actions: <Widget>[
             TextButton(
               child: const Text("Anuluj"),
@@ -270,7 +327,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   if (currentUser != null) {
                     Participant newParticipant = Participant(
                       name: currentUser.displayName ?? "Anonim",
-                      rating: 0, // Domniemana wartość, aktualizuj według potrzeb
+                      rating:
+                          0, // Domniemana wartość, aktualizuj według potrzeb
                       userId: currentUser.uid,
                     );
 
@@ -282,7 +340,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     });
 
                     // Aktualizacja Firestore
-                    await DatabaseService(uid: currentUser.uid).updateMeetingParticipants(
+                    await DatabaseService(uid: currentUser.uid)
+                        .updateMeetingParticipants(
                       widget.meeting.meetingId,
                       participants,
                     );
@@ -301,10 +360,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-        print("${place.street}, ${place.locality}, ${place.postalCode}, ${place.country},  ${place.administrativeArea},  ${place.name}");
+        print(
+            "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country},  ${place.administrativeArea},  ${place.name}");
         return "${place.locality}, ${place.street}";
       }
       return "Nie można znaleźć adresu";
@@ -313,7 +374,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 }
-
 
 class Participant {
   String name;
