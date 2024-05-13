@@ -22,11 +22,27 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool joined = false;
   List<Participant> participants = [];
 
+  void updateParticipantsList() async {
+    DocumentSnapshot meetingDoc = await FirebaseFirestore.instance
+        .collection('meetings')
+        .doc(widget.meeting.meetingId)
+        .get();
+    var data = meetingDoc.data() as Map<String, dynamic>;
+    List<Participant> updatedParticipants = List<Participant>.from(
+        (data['participants'] as List).map((item) => Participant(
+            name: item['name'],
+            rating: item['rating'],
+            userId: item['userId'])));
+    setState(() {
+      participants = updatedParticipants;
+    });
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     checkUserJoinStatus();
+    updateParticipantsList();
   }
 
   @override
@@ -60,9 +76,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       if (currentUser != null) {
         bool isParticipant = await DatabaseService(uid: currentUser.uid)
             .isUserParticipant(widget.meeting.meetingId, currentUser.uid);
-        // Aktualizujemy stan dołączenia na podstawie wyniku
         setState(() {
           joined = isParticipant;
+          if (isParticipant) {
+            Participant currentParticipant = participants.firstWhere(
+                (p) => p.userId == currentUser.uid,
+                orElse: () => Participant(
+                    name: 'Anonim', rating: 0, userId: currentUser.uid));
+            if (!participants.contains(currentParticipant)) {
+              participants.add(currentParticipant);
+            }
+          }
         });
       }
     } catch (e) {
@@ -271,9 +295,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           actions: <Widget>[
             TextButton(
               child: const Text("Anuluj"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Zamknij okno dialogowe
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text("Opuść"),
@@ -286,26 +308,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         orElse: () => Participant(
                             name: 'Anonim',
                             rating: 0,
-                            userId: currentUser
-                                .uid) // lub jakąś inną domyślną wartość
-                        );
-
-                    // Usuń uczestnika z listy lokalnej
-                    setState(() {
-                      participants.removeWhere((participant) =>
-                          participant.userId == currentUser.uid);
-                      joined = false; // Zaktualizuj stan dołączenia
-                      print("Uczestnicy po usunięciu: ${participants.length}");
-                    });
-
-                    // Aktualizacja Firestore
+                            userId: currentUser.uid));
                     await DatabaseService(uid: currentUser.uid)
                         .removeMeetingParticipant(
-                      widget.meeting.meetingId,
-                      currentParticipant, // Przekazanie pełnego obiektu uczestnika
-                    );
+                            widget.meeting.meetingId, currentParticipant);
+                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    setState(() => joined = false);
                   }
-                  Navigator.of(context).pop(); // Zamknij okno dialogowe
+                  Navigator.of(context).pop();
                 } catch (e) {
                   print("Error leaving meeting: $e");
                 }
@@ -328,9 +338,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           actions: <Widget>[
             TextButton(
               child: const Text("Anuluj"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Zamknij okno dialogowe
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
               child: const Text("Dołącz"),
@@ -340,27 +348,16 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   if (currentUser != null) {
                     Participant newParticipant = Participant(
                       name: currentUser.displayName ?? "Anonim",
-                      rating:
-                          0, // Domniemana wartość, aktualizuj według potrzeb
+                      rating: 0,
                       userId: currentUser.uid,
                     );
-
-                    // Dodajemy do listy lokalnej
-                    setState(() {
-                      participants.add(newParticipant);
-                      joined = true; // Zaktualizuj stan dołączenia
-                      print("Uczestnicy po dodaniu: ${participants.length}");
-                    });
-
-                    // Aktualizacja Firestore
                     await DatabaseService(uid: currentUser.uid)
                         .addMeetingParticipant(
-                      // Użyj nowej metody dodającej uczestnika
-                      widget.meeting.meetingId,
-                      newParticipant,
-                    );
+                            widget.meeting.meetingId, newParticipant);
+                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    setState(() => joined = true);
                   }
-                  Navigator.of(context).pop(); // Zamknij okno dialogowe
+                  Navigator.of(context).pop();
                 } catch (e) {
                   print("Error joining meeting: $e");
                 }
