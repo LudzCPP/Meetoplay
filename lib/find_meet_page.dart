@@ -27,35 +27,30 @@ class _FindMeetPageState extends State<FindMeetPage> {
   List<Meeting> filteredMeetings = [];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('WYSZUKIWANIE'),
-        // App bar decoration
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [darkBlue, lightBlue],
-              begin: Alignment.bottomRight,
-              end: Alignment.topLeft,
-            ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('WYSZUKIWANIE'),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [darkBlue, lightBlue],
+            begin: Alignment.bottomRight,
+            end: Alignment.topLeft,
           ),
         ),
       ),
-      body: Column(
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Sport dropdown
           DropdownButtonFormField<String>(
             value: _selectedSport,
             decoration: const InputDecoration(
               labelText: 'Wybierz sport',
               labelStyle: TextStyle(color: Colors.white),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: specialActionButtonColor),
-              ),
             ),
             dropdownColor: darkBlue,
             style: const TextStyle(color: Colors.white),
@@ -72,34 +67,20 @@ class _FindMeetPageState extends State<FindMeetPage> {
             },
           ),
           const SizedBox(height: 20),
-          // City text field
           TextFormField(
             controller: _cityController,
             decoration: const InputDecoration(
               labelText: 'Miasto',
               labelStyle: TextStyle(color: Colors.white),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: specialActionButtonColor),
-              ),
             ),
             style: const TextStyle(color: Colors.white),
           ),
           const SizedBox(height: 20),
-          // Level dropdown
           DropdownButtonFormField<String>(
             value: _selectedLevel,
             decoration: const InputDecoration(
               labelText: 'Poziom zaawansowania',
               labelStyle: TextStyle(color: Colors.white),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: specialActionButtonColor),
-              ),
             ),
             dropdownColor: darkBlue,
             style: const TextStyle(color: Colors.white),
@@ -115,9 +96,9 @@ class _FindMeetPageState extends State<FindMeetPage> {
               });
             },
           ),
+          const SizedBox(height: 20),
           SwitchListTile(
-            title: const Text('Dostępne miejsca',
-                style: TextStyle(color: Colors.white)),
+            title: const Text('Dostępne miejsca', style: TextStyle(color: Colors.white)),
             value: _areFreeSpotsAvailable,
             onChanged: (bool value) {
               setState(() {
@@ -126,67 +107,61 @@ class _FindMeetPageState extends State<FindMeetPage> {
             },
             activeColor: specialActionButtonColor,
           ),
-          // Date and time pickers
           ListTile(
-            title: const Text("Wybierz datę",
-                style: TextStyle(color: Colors.white)),
+            title: const Text("Wybierz datę", style: TextStyle(color: Colors.white)),
             subtitle: Text(
-              _selectedDate == null
-                  ? "Nie wybrano daty"
-                  : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
+              _selectedDate == null ? "Nie wybrano daty" : "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}",
               style: const TextStyle(color: Colors.white70),
             ),
             onTap: _pickDate,
           ),
           ListTile(
-            title: const Text("Wybierz godzinę",
-                style: TextStyle(color: Colors.white)),
+            title: const Text("Wybierz godzinę", style: TextStyle(color: Colors.white)),
             subtitle: Text(
-              _selectedTime == null
-                  ? "Nie wybrano godziny"
-                  : _selectedTime!.format(context),
+              _selectedTime == null ? "Nie wybrano godziny" : _selectedTime!.format(context),
               style: const TextStyle(color: Colors.white70),
             ),
             onTap: _pickTime,
           ),
-          // Search button
+          const SizedBox(height: 20),
           ElevatedButton(
             onPressed: searchMeetings,
             style: ButtonStyle(
-              backgroundColor:
-                  MaterialStateProperty.all(specialActionButtonColor),
+              backgroundColor: MaterialStateProperty.all(specialActionButtonColor),
               foregroundColor: MaterialStateProperty.all(Colors.white),
             ),
             child: const Text('Szukaj'),
           ),
-          // Results list
+          const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
-              shrinkWrap: true,
               itemCount: filteredMeetings.length,
               itemBuilder: (context, index) {
                 Meeting meeting = filteredMeetings[index];
-                return ListTile(
-                  title: Text(meeting.name,
-                      style: const TextStyle(color: Colors.white)),
-                  subtitle: Text("Organizator: ${meeting.organizerName}",
-                      style: const TextStyle(color: Colors.white70)),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            EventDetailsPage(meeting: meeting),
-                      ),
-                    );
-                  },
+                return Card(
+                  color: darkBlue,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ListTile(
+                    title: Text(meeting.name, style: const TextStyle(color: Colors.white)),
+                    subtitle: Text("Organizator: ${meeting.organizerName}", style: const TextStyle(color: Colors.white70)),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => EventDetailsPage(meeting: meeting),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   void _pickDate() async {
     DateTime? pickedDate = await showDatePicker(

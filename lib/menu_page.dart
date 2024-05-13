@@ -40,7 +40,7 @@ class MenuPage extends StatelessWidget {
         // Parsowanie do obiektu DateTime
         DateTime meetingDateTime =
             DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
-        
+
         if (meetingDateTime.isAfter(now)) {
           Duration difference = meetingDateTime.difference(now);
           if (nearestDuration == null || difference < nearestDuration) {
@@ -206,12 +206,14 @@ class MenuPage extends StatelessWidget {
                   ),
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventDetailsPage(meeting: nearestMeeting!),
-                    ),
-                  );
+                  if (nearestMeeting != null) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EventDetailsPage(meeting: nearestMeeting),
+                      ),
+                    );
+                  }
                 },
               ),
             ),

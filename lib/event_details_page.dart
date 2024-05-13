@@ -98,70 +98,74 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         ),
         buildDetailRow(Icons.calendar_today,
             'Data: ${widget.meeting.date} ${widget.meeting.time}'),
-        Text(
-            'Maksymalna liczba uczestników: ${widget.meeting.participantsCount}',
-            style: const TextStyle(
-                fontSize: 18, color: white, fontWeight: FontWeight.bold)),
+        const SizedBox(
+          height: 10,
+        ),
+        buildDetailRow(Icons.person_3_rounded,
+            'Maksymalna liczba uczestników: ${widget.meeting.participantsCount}'),
       ],
     );
   }
 
   Widget buildParticipantsList() {
-  return SizedBox(
-    height: 200, // Ustawiamy maksymalną wysokość kontenera
-    child: StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId).snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data!.exists) {
-          var data = snapshot.data!.data() as Map<String, dynamic>;
-          List<Participant> participants = List<Participant>.from(
-            (data['participants'] as List).map((item) => Participant(
-              name: item['name'],
-              rating: item['rating'],
-              userId: item['userId']
-            ))
-          );
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: participants.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: const Icon(Icons.person, color: Colors.white),
-                title: Text(participants[index].name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Ocena: ${participants[index].rating}', style: const TextStyle(color: Colors.white)),
-                    RatingBar.builder(
-                      initialRating: participants[index].rating.toDouble(),
-                      minRating: 1,
-                      direction: Axis.horizontal,
-                      allowHalfRating: false,
-                      itemCount: 5,
-                      itemSize: 20.0,
-                      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Colors.amber,
+    return SizedBox(
+      height: 200, // Ustawiamy maksymalną wysokość kontenera
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('meetings')
+            .doc(widget.meeting.meetingId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.exists) {
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+            List<Participant> participants = List<Participant>.from(
+                (data['participants'] as List).map((item) => Participant(
+                    name: item['name'],
+                    rating: item['rating'],
+                    userId: item['userId'])));
+            return ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: participants.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: const Icon(Icons.person, color: Colors.white),
+                  title: Text(participants[index].name,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Ocena: ${participants[index].rating}',
+                          style: const TextStyle(color: Colors.white)),
+                      RatingBar.builder(
+                        initialRating: participants[index].rating.toDouble(),
+                        minRating: 1,
+                        direction: Axis.horizontal,
+                        allowHalfRating: false,
+                        itemCount: 5,
+                        itemSize: 20.0,
+                        itemPadding:
+                            const EdgeInsets.symmetric(horizontal: 4.0),
+                        itemBuilder: (context, _) => const Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate: (rating) {},
                       ),
-                      onRatingUpdate: (rating) {
-                        
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        } else if (snapshot.hasError) {
-          return Text("Error: ${snapshot.error}");
-        }
-        return const CircularProgressIndicator();
-      },
-    ),
-  );
-}
+                    ],
+                  ),
+                );
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Text("Error: ${snapshot.error}");
+          }
+          return const CircularProgressIndicator();
+        },
+      ),
+    );
+  }
 
   Widget buildDetailRow(IconData icon, String text) {
     return Row(
