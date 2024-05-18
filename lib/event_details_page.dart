@@ -2,8 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:meetoplay/edit_meet_page.dart';
+import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:meetoplay/main.dart';
 import 'package:meetoplay/services/database.dart';
 import 'models/meetings.dart';
 import 'models/message_module.dart';
@@ -286,88 +288,123 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void showLeaveDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Potwierdzenie"),
-          content: const Text("Czy na pewno chcesz opuścić to wydarzenie?"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Anuluj"),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text("Opuść"),
-              onPressed: () async {
-                try {
-                  User? currentUser = FirebaseAuth.instance.currentUser;
-                  if (currentUser != null) {
-                    Participant currentParticipant = participants.firstWhere(
-                        (p) => p.userId == currentUser.uid,
-                        orElse: () => Participant(
-                            name: 'Anonim',
-                            rating: 0,
-                            userId: currentUser.uid));
-                    await DatabaseService(uid: currentUser.uid)
-                        .removeMeetingParticipant(
-                            widget.meeting.meetingId, currentParticipant);
-                    updateParticipantsList(); // Ponownie załaduj uczestników
-                    setState(() => joined = false);
-                  }
-                  Navigator.of(context).pop();
-                } catch (e) {
-                  print("Error leaving meeting: $e");
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Potwierdzenie"),
+        content: const Text("Czy na pewno chcesz opuścić to wydarzenie?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Anuluj"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text("Opuść"),
+            onPressed: () async {
+              Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
 
-  void showJoinDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Potwierdzenie"),
-          content:
-              const Text("Czy na pewno chcesz dołączyć do tego wydarzenia?"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("Anuluj"),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text("Dołącz"),
-              onPressed: () async {
-                try {
-                  User? currentUser = FirebaseAuth.instance.currentUser;
-                  if (currentUser != null) {
-                    Participant newParticipant = Participant(
-                      name: currentUser.displayName ?? "Anonim",
-                      rating: 0,
-                      userId: currentUser.uid,
-                    );
-                    await DatabaseService(uid: currentUser.uid)
-                        .addMeetingParticipant(
-                            widget.meeting.meetingId, newParticipant);
-                    updateParticipantsList(); // Ponownie załaduj uczestników
-                    setState(() => joined = true);
-                  }
-                  Navigator.of(context).pop();
-                } catch (e) {
-                  print("Error joining meeting: $e");
+              // Pokaż ekran ładowania
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return const LoadingScreen();
+                },
+              );
+
+              try {
+                User? currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser != null) {
+                  Participant currentParticipant = participants.firstWhere(
+                      (p) => p.userId == currentUser.uid,
+                      orElse: () => Participant(
+                          name: 'Anonim',
+                          rating: 0,
+                          userId: currentUser.uid));
+                  await DatabaseService(uid: currentUser.uid)
+                      .removeMeetingParticipant(
+                          widget.meeting.meetingId, currentParticipant);
+                  updateParticipantsList(); // Ponownie załaduj uczestników
+                  eventBus.fire(ParticipantChangedEvent()); // Wyślij powiadomienie
+                  setState(() => joined = false);
                 }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+              } catch (e) {
+                print("Error leaving meeting: $e");
+              }
+
+              if (mounted) {
+                navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
+                navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                navigatorKey.currentState?.pop(); 
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void showJoinDialog() {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Potwierdzenie"),
+        content: const Text("Czy na pewno chcesz dołączyć do tego wydarzenia?"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("Anuluj"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text("Dołącz"),
+            onPressed: () async {
+              Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
+
+              // Pokaż ekran ładowania
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return const LoadingScreen();
+                },
+              );
+
+              try {
+                User? currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser != null) {
+                  Participant newParticipant = Participant(
+                    name: currentUser.displayName ?? "Anonim",
+                    rating: 0,
+                    userId: currentUser.uid,
+                  );
+                  await DatabaseService(uid: currentUser.uid)
+                      .addMeetingParticipant(
+                          widget.meeting.meetingId, newParticipant);
+                  updateParticipantsList(); // Ponownie załaduj uczestników
+                  eventBus.fire(ParticipantChangedEvent()); // Wyślij powiadomienie
+                  setState(() => joined = true);
+                }
+              } catch (e) {
+                print("Error joining meeting: $e");
+              }
+
+              if (mounted) {
+                navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
+                navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                navigatorKey.currentState?.pop(); 
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
 
   Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     try {
@@ -393,3 +430,20 @@ class Participant {
 
   Participant({required this.name, required this.rating, required this.userId});
 }
+
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black.withOpacity(0.5),
+      body: const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      ),
+    );
+  }
+}
+

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/create_meet_page.dart';
 import 'package:meetoplay/models/meetings.dart';
@@ -15,6 +16,12 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final MapController mapController = MapController();
   String? selectedSport;
+
+  @override
+  void initState() {
+    super.initState();
+    _registerNotification();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,5 +146,19 @@ class _MapPageState extends State<MapPage> {
     return globalMarkers
         .where((marker) => marker.meeting.category == selectedSport)
         .toList();
+  }
+
+  void _registerNotification() {
+    eventBus.on<ParticipantChangedEvent>().listen((event) {
+      setState(() {
+        
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    eventBus.destroy();
+    super.dispose();
   }
 }
