@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:meetoplay/authenticate_page.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -57,11 +58,11 @@ class AuthWrapper extends StatelessWidget {
                       // Sprawdź czy każde pole uczestnika istnieje i nie jest nullem
                       String name = participant['name'] ??
                           'Nieznany'; // Użyj domyślnej nazwy jeśli pole jest puste
-                      int rating = participant['rating'] ??
+                      double rating = participant['rating'].toDouble() ??
                           0; // Użyj domyślnej oceny jeśli pole jest puste
 
                       // Dodaj uczestnika do listy z wczytanymi i sprawdzonymi danymi
-                      participants.add(Participant(name: name, rating: rating));
+                      participants.add(Participant(name: name, rating: rating.toDouble(), userId: participant['userId']));
                     }
 
                     Meeting meeting = Meeting(
