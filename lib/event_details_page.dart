@@ -6,6 +6,7 @@ import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:meetoplay/main.dart';
+import 'package:meetoplay/participant_profile_page.dart';
 import 'package:meetoplay/rating_page.dart';
 import 'package:meetoplay/services/database.dart';
 import 'models/meetings.dart';
@@ -213,6 +214,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                           color: Colors.white, fontWeight: FontWeight.bold)),
                   subtitle: Text('Ocena: ${participants[index].rating}',
                       style: const TextStyle(color: Colors.white)),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ParticipantProfilePage(
+                            participant: participants[index]),
+                      ),
+                    );
+                  },
                 );
               },
             );
@@ -320,152 +330,153 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void showLeaveDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: darkBlue,
-        title: const Text(
-          "Czy na pewno chcesz opuścić to wydarzenie?",
-          style: TextStyle(color: white),
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: darkBlue,
-              backgroundColor: pink,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Anuluj"),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: darkBlue,
+          title: const Text(
+            "Czy na pewno chcesz opuścić to wydarzenie?",
+            style: TextStyle(color: white),
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: darkBlue,
-              backgroundColor: orange,
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: darkBlue,
+                backgroundColor: pink,
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Anuluj"),
             ),
-            onPressed: () async {
-              Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: darkBlue,
+                backgroundColor: orange,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
 
-              // Pokaż ekran ładowania
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return const LoadingScreen();
-                },
-              );
+                // Pokaż ekran ładowania
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const LoadingScreen();
+                  },
+                );
 
-              try {
-                User? currentUser = FirebaseAuth.instance.currentUser;
-                if (currentUser != null) {
-                  Participant currentParticipant = participants.firstWhere(
-                      (p) => p.userId == currentUser.uid,
-                      orElse: () => Participant(
-                          name: 'Anonim',
-                          rating: 0,
-                          userId: currentUser.uid));
-                  await DatabaseService(uid: currentUser.uid)
-                      .removeMeetingParticipant(
-                          widget.meeting.meetingId, currentParticipant);
-                  updateParticipantsList(); // Ponownie załaduj uczestników
-                  eventBus.fire(ParticipantChangedEvent()); // Wyślij powiadomienie
-                  setState(() => joined = false);
+                try {
+                  User? currentUser = FirebaseAuth.instance.currentUser;
+                  if (currentUser != null) {
+                    Participant currentParticipant = participants.firstWhere(
+                        (p) => p.userId == currentUser.uid,
+                        orElse: () => Participant(
+                            name: 'Anonim',
+                            rating: 0,
+                            userId: currentUser.uid));
+                    await DatabaseService(uid: currentUser.uid)
+                        .removeMeetingParticipant(
+                            widget.meeting.meetingId, currentParticipant);
+                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    eventBus.fire(
+                        ParticipantChangedEvent()); // Wyślij powiadomienie
+                    setState(() => joined = false);
+                  }
+                } catch (e) {
+                  print("Error leaving meeting: $e");
                 }
-              } catch (e) {
-                print("Error leaving meeting: $e");
-              }
 
-              if (mounted) {
-                navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
-                navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
-                navigatorKey.currentState?.pop(); 
-              }
-            },
-            child: const Text("Opuść"),
-          ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: white, width: 2),
-        ),
-      );
-    },
-  );
-}
-
-void showJoinDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: darkBlue,
-        title: const Text(
-          "Czy na pewno chcesz dołączyć do tego wydarzenia?",
-          style: TextStyle(color: white),
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: darkBlue,
-              backgroundColor: pink,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Anuluj"),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: darkBlue,
-              backgroundColor: orange,
-            ),
-            onPressed: () async {
-              Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
-
-              // Pokaż ekran ładowania
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return const LoadingScreen();
-                },
-              );
-
-              try {
-                User? currentUser = FirebaseAuth.instance.currentUser;
-                if (currentUser != null) {
-                  Participant newParticipant = Participant(
-                    name: currentUser.displayName ?? "Anonim",
-                    rating: 0,
-                    userId: currentUser.uid,
-                  );
-                  await DatabaseService(uid: currentUser.uid)
-                      .addMeetingParticipant(
-                          widget.meeting.meetingId, newParticipant);
-                  updateParticipantsList(); // Ponownie załaduj uczestników
-                  eventBus.fire(ParticipantChangedEvent()); // Wyślij powiadomienie
-                  setState(() => joined = true);
+                if (mounted) {
+                  navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
+                  navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                  navigatorKey.currentState?.pop();
                 }
-              } catch (e) {
-                print("Error joining meeting: $e");
-              }
-
-              if (mounted) {
-                navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
-                navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
-                navigatorKey.currentState?.pop(); 
-              }
-            },
-            child: const Text("Dołącz"),
+              },
+              child: const Text("Opuść"),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: white, width: 2),
           ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: white, width: 2),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
+  void showJoinDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: darkBlue,
+          title: const Text(
+            "Czy na pewno chcesz dołączyć do tego wydarzenia?",
+            style: TextStyle(color: white),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: darkBlue,
+                backgroundColor: pink,
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Anuluj"),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: darkBlue,
+                backgroundColor: orange,
+              ),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
+
+                // Pokaż ekran ładowania
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const LoadingScreen();
+                  },
+                );
+
+                try {
+                  User? currentUser = FirebaseAuth.instance.currentUser;
+                  if (currentUser != null) {
+                    Participant newParticipant = Participant(
+                      name: currentUser.displayName ?? "Anonim",
+                      rating: 0,
+                      userId: currentUser.uid,
+                    );
+                    await DatabaseService(uid: currentUser.uid)
+                        .addMeetingParticipant(
+                            widget.meeting.meetingId, newParticipant);
+                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    eventBus.fire(
+                        ParticipantChangedEvent()); // Wyślij powiadomienie
+                    setState(() => joined = true);
+                  }
+                } catch (e) {
+                  print("Error joining meeting: $e");
+                }
+
+                if (mounted) {
+                  navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
+                  navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                  navigatorKey.currentState?.pop();
+                }
+              },
+              child: const Text("Dołącz"),
+            ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+            side: const BorderSide(color: white, width: 2),
+          ),
+        );
+      },
+    );
+  }
 
   Future<String> getAddressFromLatLng(double latitude, double longitude) async {
     try {
