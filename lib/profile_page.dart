@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:meetoplay/authenticate_page.dart';
-import 'package:meetoplay/global_variables.dart';
-import 'package:meetoplay/wrapper.dart';
+import 'authenticate_page.dart';
+import 'global_variables.dart';
+import 'wrapper.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -26,6 +26,7 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Center(
           child: user != null
               ? Column(
@@ -53,13 +54,13 @@ class ProfilePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     ListTile(
-                      leading: const Icon(Icons.email, color: Colors.black),
-                      title: const Text('Email'),
+                      leading: const Icon(Icons.email, color: darkBlue),
+                      title: const Text('Email', style: TextStyle(color: Colors.black)),
                       subtitle: Text(user.email ?? 'Nie podano', style: const TextStyle(color: white)),
                     ),
                     ListTile(
-                      leading: const Icon(Icons.calendar_today, color: Colors.black),
-                      title: const Text('Data założenia konta'),
+                      leading: const Icon(Icons.calendar_today, color: darkBlue),
+                      title: const Text('Data założenia konta', style: TextStyle(color: Colors.black)),
                       subtitle: Text(
                           user.metadata.creationTime?.toString().split('.')[0] ?? 'Nieznana',  style: const TextStyle(color: white)),
                     ),
@@ -76,6 +77,8 @@ class ProfilePage extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: specialActionButtonColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       icon: const Icon(Icons.logout),
                       label: const Text('Wyloguj'),
@@ -101,6 +104,8 @@ class ProfilePage extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: specialActionButtonColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       icon: const Icon(Icons.lock),
                       label: const Text('Resetuj hasło'),
@@ -154,6 +159,8 @@ class ProfilePage extends StatelessWidget {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: specialActionButtonColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       child: const Text('Wróć do logowania'),
                     ),

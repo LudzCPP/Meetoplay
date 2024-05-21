@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:meetoplay/global_variables.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,8 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _nicknameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -30,19 +30,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Wybierz datę urodzenia';
-    // Format daty, który można dostosować
     return DateFormat('dd-MM-yyyy').format(date);
   }
 
   void _registerUser() async {
     if (_formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential =
-            await _auth.createUserWithEmailAndPassword(
+        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
-
-        
         );
         userCredential.user!.updateDisplayName(_nicknameController.text);
 
@@ -83,140 +79,208 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Rejestracja")),
+      appBar: AppBar(
+        title: const Text("Rejestracja"),
+        backgroundColor: darkBlue,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: <Widget>[
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: Colors.black),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: lightBlue,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Proszę wprowadzić prawidłowy adres email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Hasło',
-                  labelStyle: TextStyle(color: Colors.black),
+              ],
+            ),
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Proszę wprowadzić prawidłowy adres email';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Hasło';
-                  }
-                  if (value.length < 8) {
-                    return 'Hasło musi mieć co najmniej 8 znaków';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Potwierdź hasło',
-                  labelStyle: TextStyle(color: Colors.black),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Hasło',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Hasło';
+                    }
+                    if (value.length < 8) {
+                      return 'Hasło musi mieć co najmniej 8 znaków';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę potwierdzić hasło';
-                  }
-                  if (value != _passwordController.text) {
-                    return 'Hasła nie są zgodne';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _nicknameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nick',
-                  labelStyle: TextStyle(color: Colors.black),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Potwierdź hasło',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę potwierdzić hasło';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Hasła nie są zgodne';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Nick';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _firstNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Imię',
-                  labelStyle: TextStyle(color: Colors.black),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _nicknameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nick',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Nick';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Imię';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _lastNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nazwisko',
-                  labelStyle: TextStyle(color: Colors.black),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _firstNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Imię',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Imię';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Nazwisko';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(
-                  labelText: 'Miasto',
-                  labelStyle: TextStyle(color: Colors.black),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _lastNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nazwisko',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Nazwisko';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wprowadzić Miasto';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _birthdateController,
-                decoration: const InputDecoration(
-                  labelText: 'Data urodzenia',
-                  labelStyle: TextStyle(color: Colors.black),
-                  suffixIcon: Icon(Icons.calendar_today),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _cityController,
+                  decoration: InputDecoration(
+                    labelText: 'Miasto',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wprowadzić Miasto';
+                    }
+                    return null;
+                  },
                 ),
-                readOnly:
-                    true,
-                onTap: () {
-                  _selectBirthdate(context);
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wybrać datę urodzenia';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _registerUser,
-                child: const Text('Zarejestruj się'),
-              ),
-            ],
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _birthdateController,
+                  decoration: InputDecoration(
+                    labelText: 'Data urodzenia',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    suffixIcon: const Icon(Icons.calendar_today, color: white),
+                  ),
+                  readOnly: true,
+                  onTap: () {
+                    _selectBirthdate(context);
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Proszę wybrać datę urodzenia';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _registerUser,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: specialActionButtonColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  child: const Text('Zarejestruj się'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
