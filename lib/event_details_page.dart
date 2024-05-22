@@ -9,6 +9,7 @@ import 'package:meetoplay/main.dart';
 import 'package:meetoplay/participant_profile_page.dart';
 import 'package:meetoplay/rating_page.dart';
 import 'package:meetoplay/services/database.dart';
+import 'package:meetoplay/services/notification.dart';
 import 'models/meetings.dart';
 import 'models/message_module.dart';
 
@@ -378,6 +379,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         .removeMeetingParticipant(
                             widget.meeting.meetingId, currentParticipant);
                     updateParticipantsList(); // Ponownie załaduj uczestników
+                    PushNotifications().unscheduleNotification(0);
                     eventBus.fire(
                         ParticipantChangedEvent()); // Wyślij powiadomienie
                     setState(() => joined = false);
@@ -452,6 +454,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         .addMeetingParticipant(
                             widget.meeting.meetingId, newParticipant);
                     updateParticipantsList(); // Ponownie załaduj uczestników
+                    String dateTimeString = '${widget.meeting.date}/${widget.meeting.time}';
+                    List<String> dateTimeParts = dateTimeString.split('/');
+                    String formattedDate =
+                        '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
+                    String formattedTime = dateTimeParts[3].padLeft(5, '0');
+                    String formattedDateTimeString = '$formattedDate $formattedTime';
+
+                    // Parsowanie do obiektu DateTime
+                    DateTime meetingDateTime =
+                        DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
+                    PushNotifications().scheduleNotification(widget.meeting.name, meetingDateTime);
                     eventBus.fire(
                         ParticipantChangedEvent()); // Wyślij powiadomienie
                     setState(() => joined = true);

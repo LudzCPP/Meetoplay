@@ -137,32 +137,44 @@ Future scheduleNotification(String eventName, DateTime eventDate) async {
   var location = tz.getLocation('Europe/Warsaw');
   tz.setLocalLocation(location);
 
+
   var scheduledNotificationDateTime =
       tz.TZDateTime.from(eventDate.subtract(const Duration(hours: 1)), tz.local);
 
       print(scheduledNotificationDateTime);
       print(tz.TZDateTime.now(tz.local));
+  if(scheduledNotificationDateTime.isBefore(tz.TZDateTime.now(tz.local))){
+    showSimpleNotification(title: 'Przypomnienie o wydarzeniu', body: 'Spotkanie "$eventName" odbędzie się z mniej niż godzinę', payload: 'data');
+  }
+  else{
+    var androidDetails = const AndroidNotificationDetails(
+      'channel_id',
+      'channel_name',
+      channelDescription: 'channel_description',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker'
+    );
+    var notificationDetails = NotificationDetails(android: androidDetails);
 
-  var androidDetails = const AndroidNotificationDetails(
-    'channel_id',
-    'channel_name',
-    channelDescription: 'channel_description',
-    importance: Importance.max,
-    priority: Priority.high,
-    ticker: 'ticker'
-  );
-  var notificationDetails = NotificationDetails(android: androidDetails);
-
-  await _flutterLocalNotificationsPlugin.zonedSchedule(
-    0,
-    'Przypomnienie o wydarzeniu',
-    'Spotkanie "$eventName" odbędzie się za godzinę',
-    scheduledNotificationDateTime,
-    notificationDetails,
-    androidAllowWhileIdle: true,
-    uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime,
-    payload: "data",
-  );
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      0,
+      'Przypomnienie o wydarzeniu',
+      'Spotkanie "$eventName" odbędzie się za godzinę',
+      scheduledNotificationDateTime,
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: "data",
+    );
+  }
+}
+Future unscheduleNotification(int id) async{
+  final List<PendingNotificationRequest> pendingNotificationRequests =
+  await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
+  if(pendingNotificationRequests.isNotEmpty) {
+    await _flutterLocalNotificationsPlugin.cancel(id);
+  }
 }
 }
