@@ -138,7 +138,7 @@ Future scheduleNotification(String eventName, DateTime eventDate) async {
   tz.setLocalLocation(location);
 
   var scheduledNotificationDateTime =
-      tz.TZDateTime.from(eventDate.subtract(const Duration(seconds: -30)), tz.local);
+      tz.TZDateTime.from(eventDate.subtract(const Duration(hours: 1)), tz.local);
 
       print(scheduledNotificationDateTime);
       print(tz.TZDateTime.now(tz.local));

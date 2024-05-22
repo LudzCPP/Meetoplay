@@ -535,12 +535,13 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           ),
                         );
                          if (_formKey.currentState!.validate()) {
-                          String dateTimeString = '${_dateController.text}/${_timeController.text}';
-                          List<String> dateTimeParts = dateTimeString.split('/');
-                          String formattedDate =
-                              '${dateTimeParts[1].padLeft(2, '0')}/${dateTimeParts[0].padLeft(2, '0')}/${dateTimeParts[2]}';
-                          String formattedTime = dateTimeParts[3].padLeft(5, '0');
-                          String formattedDateTimeString = '$formattedDate $formattedTime';
+                           // Dostosowanie formatu daty i czasu
+                           String dateTimeString = '${_dateController.text}/${_timeController.text}';
+                           List<String> dateTimeParts = dateTimeString.split('/');
+                           String formattedDate =
+                               '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
+                           String formattedTime = dateTimeParts[3].padLeft(5, '0');
+                           String formattedDateTimeString = '$formattedDate $formattedTime';
 
                           // Parsowanie do obiektu DateTime
                           DateTime meetingDateTime =
@@ -549,7 +550,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           //scheduleNotification(_eventNameController.text, meetingDateTime);
                           //var psh = PushNotifications();
 
-                          //PushNotifications.scheduleNotification(_eventNameController.text, meetingDateTime);
+                          PushNotifications().scheduleNotification(_eventNameController.text, meetingDateTime);
 
                         }
                       }
