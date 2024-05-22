@@ -1,4 +1,5 @@
 import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/event_details_page.dart';
 
 class Meeting {
   String meetingId;
@@ -15,6 +16,7 @@ class Meeting {
   double organizerRating;
   List<Participant> participants;
   String ownerId;
+  String status; // Dodaj to pole
 
   Meeting({
     required this.meetingId,
@@ -31,16 +33,9 @@ class Meeting {
     required this.organizerRating,
     required this.participants,
     required this.ownerId,
+    this.status = 'ongoing', // Domyślnie status to 'ongoing'
   });
 
+  // Pamiętaj o zaktualizowaniu serializacji/deserializacji
 }
 
-class Participant {
-  String name;
-  int rating;
-
-  Participant({
-    required this.name,
-    required this.rating,
-  });
-}

@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/services/database.dart';
 import 'package:meetoplay/services/notification.dart';
@@ -394,7 +395,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 onChanged: (bool? value) {
                   setState(() {
                     _isOrganizerParticipating = value!;
-                    Participant participant = Participant(name: currentUser?.displayName ?? 'brak nazwy', rating: 4);
+                    Participant participant = Participant(name: currentUser?.displayName ?? 'brak nazwy', rating: 4, userId: currentUser!.uid);
                     currentParticipants.add(participant);
                   });
                 },

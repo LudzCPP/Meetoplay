@@ -77,6 +77,8 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
         backgroundColor: darkBlue,
         selectedItemColor: white,
         unselectedItemColor: white.withOpacity(0.5),
@@ -88,12 +90,12 @@ class _HomePageState extends State<HomePage> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 40),
-            label: 'Home',
+            icon: Icon(Icons.home, size: 45),
+            label: '',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.event, size: 40),
-            label: 'Events',
+            icon: Icon(Icons.event, size: 45),
+            label: '',
           ),
         ],
       ),
