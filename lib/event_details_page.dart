@@ -12,6 +12,7 @@ import 'package:meetoplay/services/database.dart';
 import 'package:meetoplay/services/notification.dart';
 import 'models/meetings.dart';
 import 'models/message_module.dart';
+import 'dart:math';
 
 class EventDetailsPage extends StatefulWidget {
   final Meeting meeting;
@@ -26,6 +27,28 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool joined = false;
   List<Participant> participants = [];
   bool isEnded = false;
+  List<Participant> teamA = [];
+  List<Participant> teamB = [];
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    addFakeParticipants();
+    checkUserJoinStatus();
+    updateParticipantsList();
+  }
+
+  void addFakeParticipants() {
+    participants.addAll([
+      Participant(name: "Jan Kowalski", rating: 4.5, userId: "1"),
+      Participant(name: "Anna Nowak", rating: 4.0, userId: "2"),
+      Participant(name: "Paweł Wiśniewski", rating: 4.2, userId: "3"),
+      Participant(name: "Zofia Wójcik", rating: 3.8, userId: "4"),
+      Participant(name: "Marek Lewandowski", rating: 3.9, userId: "5"),
+      Participant(name: "Ewa Zielińska", rating: 4.1, userId: "6"),
+    ]);
+  }
 
   void updateParticipantsList() async {
     DocumentSnapshot meetingDoc = await FirebaseFirestore.instance
@@ -39,7 +62,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             rating: item['rating'].toDouble(),
             userId: item['userId'])));
     setState(() {
-      participants = updatedParticipants;
+      participants.addAll(updatedParticipants);
       isEnded = data['status'] == 'ended';
     });
 
@@ -54,11 +77,23 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    checkUserJoinStatus();
-    updateParticipantsList();
+  void drawTeams() {
+    setState(() {
+      isLoading = true;
+    });
+
+    Future.delayed(const Duration(seconds: 2), () {
+      List<Participant> shuffledParticipants = List.from(participants);
+      shuffledParticipants.shuffle(Random());
+
+      int halfSize = (shuffledParticipants.length / 2).ceil();
+      teamA = shuffledParticipants.sublist(0, halfSize);
+      teamB = shuffledParticipants.sublist(halfSize);
+
+      setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   @override
@@ -85,11 +120,69 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     buildEndEventButton(),
                   buildEditButton(),
                   buildJoinButton(),
+                  buildDrawTeamsButton(),
+                  buildTeamsDisplay(),
                   buildChatSection(widget.meeting.meetingId),
                 ],
               ),
             ),
     );
+  }
+
+  Widget buildDrawTeamsButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
+      child: ElevatedButton(
+        onPressed: drawTeams,
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.green),
+          foregroundColor: MaterialStateProperty.all(white),
+        ),
+        child: const Text('Wylosuj składy'),
+      ),
+    );
+  }
+
+  Widget buildTeamsDisplay() {
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Skład drużyny A:',
+                  style: TextStyle(
+                      fontSize: 18, color: white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ...teamA.map((participant) => ListTile(
+                    leading: const Icon(Icons.person, color: Colors.white),
+                    title: Text(participant.name,
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Text('Ocena: ${participant.rating}',
+                        style: const TextStyle(color: Colors.white)),
+                  )),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Skład drużyny B:',
+                  style: TextStyle(
+                      fontSize: 18, color: white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ...teamB.map((participant) => ListTile(
+                    leading: const Icon(Icons.person, color: Colors.white),
+                    title: Text(participant.name,
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
+                    subtitle: Text('Ocena: ${participant.rating}',
+                        style: const TextStyle(color: Colors.white)),
+                  )),
+            ],
+          );
   }
 
   Widget buildEndEventButton() {

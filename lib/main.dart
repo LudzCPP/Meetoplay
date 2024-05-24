@@ -129,7 +129,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: lightBlue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const AdminDashboard(),
+      home: const AuthWrapper(),
     );
   }
 }
