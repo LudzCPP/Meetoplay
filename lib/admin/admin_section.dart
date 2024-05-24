@@ -32,11 +32,7 @@ class AdminSection extends StatelessWidget {
             const SizedBox(width: 16.0),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20.0,
-                color: white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
         ),
