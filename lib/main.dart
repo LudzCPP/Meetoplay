@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:meetoplay/admin/admin_dashboard.dart';
 import 'package:meetoplay/services/notification.dart';
 import 'package:meetoplay/services/notification_service.dart';
 import 'package:meetoplay/wrapper.dart';
@@ -15,8 +16,8 @@ import 'package:timezone/timezone.dart' as tz;
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
-Future _firebaseBackgroundMessage(RemoteMessage mesage) async{
-  if(mesage.notification != null){
+Future _firebaseBackgroundMessage(RemoteMessage mesage) async {
+  if (mesage.notification != null) {
     print("powiadomienie otrzymane w tle");
   }
 }
@@ -32,7 +33,7 @@ void showNotification({required String title, required String body}) {
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text("Ok"))
+            child: const Text("Ok"))
       ],
     ),
   );
@@ -43,19 +44,16 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
   await PushNotifications.init();
- 
+
   //PushNotifications.scheduleNotification(eventName, eventDate)
 
-
   await PushNotifications.localNotiInit();
-
 
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -89,12 +87,12 @@ void main() async {
 
   if (message != null) {
     print("Launched from terminated state");
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       navigatorKey.currentState!.pushNamed("/message", arguments: message);
     });
   }
 
-   //var date = DateTime.now();
+  //var date = DateTime.now();
   //PushNotifications().scheduleNotification('test', date);
   // NotificationService().initializeNotification();
   // NotificationService().showNotification(1, 'Hi Guys', 'I am Mahdi');
@@ -131,7 +129,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: lightBlue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const AuthWrapper(),
+      home: const AdminDashboard(),
     );
   }
 }
