@@ -54,6 +54,7 @@ class UserList extends StatelessWidget {
                   children: [
                     Text('Email: ${data['email']}'),
                     Text('Role: ${data['role']}'),
+                    Text('Status: ${data['banned'] ? "Banned" : "Active"}'),
                   ],
                 ),
                 trailing: Row(
@@ -62,13 +63,13 @@ class UserList extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.blueAccent),
                       onPressed: () {
-                        _editUser(context, document.id, data['nickname'], data['email'], data['role']);
+                        _editUser(context, document.id, data['nickname'], data['email'], data['role'], data['banned']);
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      icon: Icon(data['banned'] ? Icons.lock_open : Icons.lock, color: Colors.redAccent),
                       onPressed: () {
-                        _deleteUser(context, document.id, data['email']);
+                        _toggleBanUser(context, document.id, data['banned']);
                       },
                     ),
                   ],
@@ -81,7 +82,7 @@ class UserList extends StatelessWidget {
     );
   }
 
-  Future<void> _editUser(BuildContext context, String userId, String nickname, String email, String role) async {
+  Future<void> _editUser(BuildContext context, String userId, String nickname, String email, String role, bool banned) async {
     final TextEditingController nicknameController = TextEditingController(text: nickname);
     final TextEditingController emailController = TextEditingController(text: email);
     String selectedRole = role;
@@ -141,29 +142,14 @@ class UserList extends StatelessWidget {
     );
   }
 
-  Future<void> _deleteUser(BuildContext context, String userId, String email) async {
+  Future<void> _toggleBanUser(BuildContext context, String userId, bool isBanned) async {
     try {
-      // Usuń użytkownika z Firestore
-      await _firestore.collection('users').doc(userId).delete();
-
-      // Znajdź użytkownika w Firebase Authentication na podstawie emaila
-      List<User> users = await _auth.fetchSignInMethodsForEmail(email).then((signInMethods) async {
-        if (signInMethods.contains('password') || signInMethods.contains('google.com')) {
-          return await _auth.signInWithEmailAndPassword(email: email, password: 'dummyPassword')
-              .then((credential) => [credential.user!]);
-        } else {
-          return [];
-        }
+      await _firestore.collection('users').doc(userId).update({
+        'banned': !isBanned,
       });
-
-      if (users.isNotEmpty) {
-        User user = users.first;
-        await user.delete();
-      }
-
-      Fluttertoast.showToast(msg: "Użytkownik został usunięty.");
+      Fluttertoast.showToast(msg: isBanned ? "User unbanned." : "User banned.");
     } catch (e) {
-      Fluttertoast.showToast(msg: "Błąd usuwania użytkownika: $e");
+      Fluttertoast.showToast(msg: "Error updating user status: $e");
     }
   }
 }

@@ -30,6 +30,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'city': '',
         'birthdate': null,
         'role': 'User', // Dodanie domyślnej roli
+        'banned': false, // Domyślnie użytkownik nie jest zbanowany
       });
     } catch (e) {
       Fluttertoast.showToast(
@@ -37,21 +38,34 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     }
   }
 
-  void _signInWithEmail() async {
+  Future<bool> _isUserBanned(User user) async {
+    DocumentSnapshot userDoc =
+        await _firestore.collection('users').doc(user.uid).get();
+    return userDoc.exists && userDoc['banned'] == true;
+  }
+
+  Future<void> _signInWithEmail() async {
     try {
       final UserCredential userCredential =
           await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      await _addUserToFirestore(userCredential.user!);
-      Fluttertoast.showToast(msg: "Zalogowano: ${userCredential.user!.email}");
+
+      if (await _isUserBanned(userCredential.user!)) {
+        await _auth.signOut();
+        Fluttertoast.showToast(
+            msg: "Twoje konto zostało zablokowane i nie możesz się zalogować.");
+      } else {
+        Fluttertoast.showToast(
+            msg: "Zalogowano: ${userCredential.user!.email}");
+      }
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania: $e");
     }
   }
 
-  void _registerWithEmail() async {
+  Future<void> _registerWithEmail() async {
     try {
       final UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -66,9 +80,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     }
   }
 
-  void _signInAnonymously() async {
+  Future<void> _signInAnonymously() async {
     try {
       final UserCredential userCredential = await _auth.signInAnonymously();
+      await _addUserToFirestore(userCredential.user!);
       Fluttertoast.showToast(
           msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
     } catch (e) {
@@ -88,9 +103,16 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       );
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
-      await _addUserToFirestore(userCredential.user!);
-      Fluttertoast.showToast(
-          msg: "Zalogowano przez Google: ${userCredential.user!.email}");
+
+      if (await _isUserBanned(userCredential.user!)) {
+        await _auth.signOut();
+        Fluttertoast.showToast(
+            msg: "Twoje konto zostało zablokowane i nie możesz się zalogować.");
+      } else {
+        await _addUserToFirestore(userCredential.user!);
+        Fluttertoast.showToast(
+            msg: "Zalogowano przez Google: ${userCredential.user!.email}");
+      }
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania przez Google: $e");
     }

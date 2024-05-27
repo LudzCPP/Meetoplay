@@ -50,7 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'last_name': _lastNameController.text.trim(),
           'city': _cityController.text.trim(),
           'birthdate': _birthdate?.toIso8601String(),
-          'role': 'User', // Dodanie domyślnej roli
+          'role': 'User',
+          'banned': false, // Domyślnie użytkownik nie jest zbanowany
         });
 
         Fluttertoast.showToast(
