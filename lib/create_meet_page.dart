@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -76,37 +75,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
       );
     });
   }
-
-//   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//   FlutterLocalNotificationsPlugin();
-//   void scheduleNotification(String eventName, DateTime eventDate) async {
-  
-//   tz.TZDateTime scheduledNotificationDateTime =
-//       tz.TZDateTime.from(eventDate.subtract(Duration(minutes: -1)), tz.local); //coś nie tak ze strefami jest
-//       print(scheduledNotificationDateTime);
-//       print(tz.TZDateTime.now(tz.local));
-//       print(tz.local);
-
-//   var androidDetails = const AndroidNotificationDetails(
-//     'channel_id',
-//     'channel_name',
-//     channelDescription: 'channel_description',
-//     importance: Importance.high,
-//     priority: Priority.high,
-//     ticker: 'ticker'
-//   );
-//   var notificationDetails = NotificationDetails(android: androidDetails);
-
-//   await flutterLocalNotificationsPlugin.zonedSchedule(
-//     0,
-//     'Przypomnienie o wydarzeniu',
-//     'Spotkanie "$eventName" odbędzie się za godzinę',
-//     scheduledNotificationDateTime,
-//     notificationDetails,
-//     uiLocalNotificationDateInterpretation:
-//         UILocalNotificationDateInterpretation.absoluteTime,
-//   );
-// }
 
   Future<void> _searchAndUpdateLocation(String address) async {
     try {
@@ -297,39 +265,53 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              DropdownButtonFormField<String>(
-                value: _selectedSport,
-                decoration: const InputDecoration(
-                  labelText: 'Sport',
-                  labelStyle: TextStyle(color: white),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: white),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: specialActionButtonColor),
-                  ),
-                ),
-                dropdownColor: darkBlue,
-                style: const TextStyle(color: white),
-                items: sportsList.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedSport = newValue;
-                  });
-                },
-                icon: const Icon(Icons.arrow_drop_down, color: white),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Proszę wybrać sport';
-                  }
-                  return null;
-                },
-              ),
+              StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('categories')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    var categories = snapshot.data!.docs
+                        .map((doc) => doc['name'] as String)
+                        .toList();
+                    return DropdownButtonFormField<String>(
+                      value: _selectedSport,
+                      decoration: const InputDecoration(
+                        labelText: 'Sport',
+                        labelStyle: TextStyle(color: white),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: white),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide:
+                              BorderSide(color: specialActionButtonColor),
+                        ),
+                      ),
+                      dropdownColor: darkBlue,
+                      style: const TextStyle(color: white),
+                      items: categories
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedSport = newValue;
+                        });
+                      },
+                      icon: const Icon(Icons.arrow_drop_down, color: white),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Proszę wybrać sport';
+                        }
+                        return null;
+                      },
+                    );
+                  }),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(
                 itemHeight: 50,
@@ -359,7 +341,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
                 icon: const Icon(Icons.arrow_drop_down, color: white),
               ),
-              const SizedBox(height: 20),            
+              const SizedBox(height: 20),
               DropdownButtonFormField<int>(
                 value: _selectedMaxParticipants,
                 decoration: const InputDecoration(
@@ -389,18 +371,23 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
               ),
               const SizedBox(height: 40),
               CheckboxListTile(
-                activeColor: orange ,
-                title: const Text('Biorę udział w wydarzeniu', style: TextStyle(color: white),),
+                activeColor: orange,
+                title: const Text(
+                  'Biorę udział w wydarzeniu',
+                  style: TextStyle(color: white),
+                ),
                 value: _isOrganizerParticipating,
                 onChanged: (bool? value) {
                   setState(() {
                     _isOrganizerParticipating = value!;
-                    Participant participant = Participant(name: currentUser?.displayName ?? 'brak nazwy', rating: 4, userId: currentUser!.uid);
+                    Participant participant = Participant(
+                        name: currentUser?.displayName ?? 'brak nazwy',
+                        rating: 4,
+                        userId: currentUser!.uid);
                     currentParticipants.add(participant);
                   });
                 },
-                controlAffinity: ListTileControlAffinity
-                    .leading,
+                controlAffinity: ListTileControlAffinity.leading,
               ),
               const SizedBox(height: 20),
               Padding(
@@ -484,26 +471,10 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Replace this with Meeting creation logic
-                        // Meeting newMeeting = Meeting(
-                        //   name: _eventNameController.text,
-                        //   location: _selectedLocation,
-                        //   date: _dateController.text,
-                        //   time: _timeController.text,
-                        //   category: _categoryController.text,
-                        //   skillLevel: _skillLevelController.text,
-                        //   participantsCount: 0,
-                        //   registeredCount: 0,
-                        //   waitListCount: 0,
-                        //   organizerName:
-                        //       FirebaseAuth.instance.currentUser!.displayName ??
-                        //           "Organizer",
-                        //   organizerRating: 4.5, // Example rating
-                        //   participants: [],
-                        //   ownerId: FirebaseAuth.instance.currentUser!.uid,
-                        // );
-                        String meetingId = DateTime.now().millisecondsSinceEpoch.toString();
-                        DatabaseService(uid: FirebaseAuth.instance.currentUser!.uid)
+                        String meetingId =
+                            DateTime.now().millisecondsSinceEpoch.toString();
+                        DatabaseService(
+                                uid: FirebaseAuth.instance.currentUser!.uid)
                             .createMeeting(
                           _eventNameController.text,
                           _selectedLocation,
@@ -514,7 +485,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           _selectedMaxParticipants!.toInt(),
                           0,
                           0,
-                          FirebaseAuth.instance.currentUser!.displayName ?? "Organizer",
+                          FirebaseAuth.instance.currentUser!.displayName ??
+                              "Organizer",
                           4.5, // Example rating
                           [],
                           FirebaseAuth.instance.currentUser!.uid,
@@ -524,40 +496,45 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         FirebaseFirestore.instance
                             .collection('meetingchat_$meetingId')
                             .doc('initialDoc')
-                            .set({
-                        });
+                            .set({});
 
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Spotkanie zostało dodane!'),
                             duration: Duration(seconds: 2),
                           ),
                         );
-                         if (_formKey.currentState!.validate()) {
-                           // Dostosowanie formatu daty i czasu
-                           String dateTimeString = '${_dateController.text}/${_timeController.text}';
-                           List<String> dateTimeParts = dateTimeString.split('/');
-                           String formattedDate =
-                               '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
-                           String formattedTime = dateTimeParts[3].padLeft(5, '0');
-                           String formattedDateTimeString = '$formattedDate $formattedTime';
+                        if (_formKey.currentState!.validate()) {
+                          // Dostosowanie formatu daty i czasu
+                          String dateTimeString =
+                              '${_dateController.text}/${_timeController.text}';
+                          List<String> dateTimeParts =
+                              dateTimeString.split('/');
+                          String formattedDate =
+                              '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
+                          String formattedTime =
+                              dateTimeParts[3].padLeft(5, '0');
+                          String formattedDateTimeString =
+                              '$formattedDate $formattedTime';
 
                           // Parsowanie do obiektu DateTime
                           DateTime meetingDateTime =
-                              DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
+                              DateTime.tryParse(formattedDateTimeString) ??
+                                  DateTime.now();
                           //DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
                           //scheduleNotification(_eventNameController.text, meetingDateTime);
                           //var psh = PushNotifications();
 
-                          PushNotifications().scheduleNotification(_eventNameController.text, meetingDateTime);
-
+                          PushNotifications().scheduleNotification(
+                              _eventNameController.text, meetingDateTime);
                         }
                       }
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                      MaterialStateProperty.all(specialActionButtonColor),
+                          MaterialStateProperty.all(specialActionButtonColor),
                       foregroundColor: MaterialStateProperty.all(white),
                     ),
                     child: const Text('Dodaj spotkanie'),

@@ -52,7 +52,7 @@ void main() async {
   await PushNotifications.init();
 
   //PushNotifications.scheduleNotification(eventName, eventDate)
-
+  await fetchCategories();
   await PushNotifications.localNotiInit();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);

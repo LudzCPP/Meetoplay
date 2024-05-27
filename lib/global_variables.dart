@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:meetoplay/meet_marker.dart';
 import 'package:meetoplay/models/meetings.dart';
-  
+
 List<MeetMarker> globalMarkers = [];
 List<Meeting> globalMeetings = [];
 
@@ -17,14 +17,12 @@ const darkBlue = Color(0xff004e89);
 const lightBlue = Color(0xff1a659e);
 const specialActionButtonColor = Color(0xfffd5b28);
 
-const List<String> sportsList = [
-  'Piłka nożna',
-  'Koszykówka',
-  'Tenis',
-  'Siatkówka',
-  'Bieganie',
-  'Pływanie',
-  'Rowery',
-];
+List<String> sportsList = [];
+
+Future<void> fetchCategories() async {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final snapshot = await firestore.collection('categories').get();
+  sportsList = snapshot.docs.map((doc) => doc['name'] as String).toList();
+}
 
 final currentUser = FirebaseAuth.instance.currentUser;

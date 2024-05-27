@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -102,25 +103,38 @@ class _MapPageState extends State<MapPage> {
             return AlertDialog(
               title: const Text('Wybierz sport'),
               content: SingleChildScrollView(
-                child: ListBody(
-                  children: [
-                    ...sportsList.map((String sport) {
-                      return ListTile(
-                        title: Text(sport),
-                        selected: tempSelectedSport == sport,
-                        selectedTileColor: Colors.blue.shade100,
-                        onTap: () {
-                          setStateDialog(() {
-                            if (tempSelectedSport == sport) {
-                              tempSelectedSport = null;
-                            } else {
-                              tempSelectedSport = sport;
-                            }
-                          });
-                        },
-                      );
-                    }),
-                  ],
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('categories')
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    var categories = snapshot.data!.docs
+                        .map((doc) => doc['name'] as String)
+                        .toList();
+                    return ListBody(
+                      children: [
+                        ...categories.map((String sport) {
+                          return ListTile(
+                            title: Text(sport),
+                            selected: tempSelectedSport == sport,
+                            selectedTileColor: Colors.blue.shade100,
+                            onTap: () {
+                              setStateDialog(() {
+                                if (tempSelectedSport == sport) {
+                                  tempSelectedSport = null;
+                                } else {
+                                  tempSelectedSport = sport;
+                                }
+                              });
+                            },
+                          );
+                        }),
+                      ],
+                    );
+                  },
                 ),
               ),
               actions: <Widget>[
@@ -150,9 +164,7 @@ class _MapPageState extends State<MapPage> {
 
   void _registerNotification() {
     eventBus.on<ParticipantChangedEvent>().listen((event) {
-      setState(() {
-        
-      });
+      setState(() {});
     });
   }
 

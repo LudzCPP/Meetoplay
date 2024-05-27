@@ -52,6 +52,8 @@ dependencies:
   timezone: ^0.9.3
   flutter_rating_bar: ^4.0.1
   event_bus: ^2.0.0
+  cloud_functions: ^4.0.0
+  fl_chart: ^0.36.0
 
 
 dev_dependencies:

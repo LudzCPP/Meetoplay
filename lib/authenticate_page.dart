@@ -20,6 +20,23 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<void> _addUserToFirestore(User user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set({
+        'email': user.email,
+        'nickname': user.displayName ?? '',
+        'first_name': '',
+        'last_name': '',
+        'city': '',
+        'birthdate': null,
+        'role': 'User', // Dodanie domyślnej roli
+      });
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: "Błąd podczas dodawania użytkownika do Firestore: $e");
+    }
+  }
+
   void _signInWithEmail() async {
     try {
       final UserCredential userCredential =
@@ -27,6 +44,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      await _addUserToFirestore(userCredential.user!);
       Fluttertoast.showToast(msg: "Zalogowano: ${userCredential.user!.email}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania: $e");
@@ -40,6 +58,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      await _addUserToFirestore(userCredential.user!);
       Fluttertoast.showToast(
           msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
     } catch (e) {
@@ -59,14 +78,19 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount!.authentication;
+      final GoogleSignInAccount? googleSignInAccount =
+          await _googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount!.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
       );
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
-      Fluttertoast.showToast(msg: "Zalogowano przez Google: ${userCredential.user!.email}");
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      await _addUserToFirestore(userCredential.user!);
+      Fluttertoast.showToast(
+          msg: "Zalogowano przez Google: ${userCredential.user!.email}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania przez Google: $e");
     }
@@ -127,8 +151,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 onPressed: _signInWithEmail,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: specialActionButtonColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Zaloguj przez email'),
               ),
@@ -137,8 +163,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 onPressed: _signInAnonymously,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: orange,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Kontynuuj bez logowania'),
               ),
@@ -147,13 +175,16 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const RegisterScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: pink,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Rejestracja przez email'),
               ),
@@ -162,8 +193,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 onPressed: _signInWithGoogle,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: darkBlue,
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                  textStyle: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 child: const Text('Zaloguj przez Google'),
               ),
