@@ -26,6 +26,7 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage> {
   bool joined = false;
   List<Participant> participants = [];
+  List<Participant> waitingList = [];
   bool isEnded = false;
   List<Participant> teamA = [];
   List<Participant> teamB = [];
@@ -34,20 +35,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   @override
   void initState() {
     super.initState();
-    addFakeParticipants();
     checkUserJoinStatus();
     updateParticipantsList();
-  }
-
-  void addFakeParticipants() {
-    participants.addAll([
-      Participant(name: "Jan Kowalski", rating: 4.5, userId: "1"),
-      Participant(name: "Anna Nowak", rating: 4.0, userId: "2"),
-      Participant(name: "Paweł Wiśniewski", rating: 4.2, userId: "3"),
-      Participant(name: "Zofia Wójcik", rating: 3.8, userId: "4"),
-      Participant(name: "Marek Lewandowski", rating: 3.9, userId: "5"),
-      Participant(name: "Ewa Zielińska", rating: 4.1, userId: "6"),
-    ]);
   }
 
   void updateParticipantsList() async {
@@ -58,15 +47,22 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     var data = meetingDoc.data() as Map<String, dynamic>;
     List<Participant> updatedParticipants = List<Participant>.from(
         (data['participants'] as List).map((item) => Participant(
-            name: item['name'],
-            rating: item['rating'].toDouble(),
-            userId: item['userId'])));
+              name: item['name'],
+              rating: item['rating'],
+              userId: item['userId'],
+            )));
+    List<Participant> updatedWaitingList = List<Participant>.from(
+        (data['waitingList'] as List).map((item) => Participant(
+              name: item['name'],
+              rating: item['rating'],
+              userId: item['userId'],
+            )));
     setState(() {
-      participants.addAll(updatedParticipants);
+      participants = updatedParticipants;
+      waitingList = updatedWaitingList;
       isEnded = data['status'] == 'ended';
     });
 
-    // Jeśli wydarzenie jest zakończone, przekieruj na stronę oceniania
     if (isEnded) {
       Navigator.pushReplacement(
         context,
@@ -77,23 +73,21 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-  void drawTeams() {
-    setState(() {
-      isLoading = true;
-    });
-
-    Future.delayed(const Duration(seconds: 2), () {
-      List<Participant> shuffledParticipants = List.from(participants);
-      shuffledParticipants.shuffle(Random());
-
-      int halfSize = (shuffledParticipants.length / 2).ceil();
-      teamA = shuffledParticipants.sublist(0, halfSize);
-      teamB = shuffledParticipants.sublist(halfSize);
-
-      setState(() {
-        isLoading = false;
-      });
-    });
+  void checkUserJoinStatus() async {
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        bool isParticipant = await DatabaseService(uid: currentUser.uid)
+            .isUserParticipant(widget.meeting.meetingId, currentUser.uid);
+        bool isInWaitingList = await DatabaseService(uid: currentUser.uid)
+            .isUserInWaitingList(widget.meeting.meetingId, currentUser.uid);
+        setState(() {
+          joined = isParticipant || isInWaitingList;
+        });
+      }
+    } catch (e) {
+      print("Error checking user join status: $e");
+    }
   }
 
   @override
@@ -116,6 +110,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     child: buildMeetingDetails(),
                   ),
                   buildParticipantsList(),
+                  buildWaitingList(),
                   if (currentUser?.uid == widget.meeting.ownerId)
                     buildEndEventButton(),
                   buildEditButton(),
@@ -200,7 +195,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void endEvent() async {
-    // Aktualizacja stanu wydarzenia w bazie danych na zakończone
     await FirebaseFirestore.instance
         .collection('meetings')
         .doc(widget.meeting.meetingId)
@@ -210,45 +204,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       isEnded = true;
     });
 
-    // Przekierowanie do strony oceny uczestników
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => RatingPage(meeting: widget.meeting),
       ),
-    );
-  }
-
-  void checkUserJoinStatus() async {
-    try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        bool isParticipant = await DatabaseService(uid: currentUser.uid)
-            .isUserParticipant(widget.meeting.meetingId, currentUser.uid);
-        setState(() {
-          joined = isParticipant;
-          if (isParticipant) {
-            Participant currentParticipant = participants.firstWhere(
-                (p) => p.userId == currentUser.uid,
-                orElse: () => Participant(
-                    name: 'Anonim', rating: 0, userId: currentUser.uid));
-            if (!participants.contains(currentParticipant)) {
-              participants.add(currentParticipant);
-            }
-          }
-        });
-      }
-    } catch (e) {
-      print("Error checking user join status: $e");
-    }
-  }
-
-  Widget buildChatSection(String meetingId) {
-    return Container(
-      constraints: const BoxConstraints(maxHeight: 390),
-      padding: const EdgeInsets.all(4.0),
-      child: GroupChatPage(
-          meetingId: meetingId), // Przekazujesz meetingId do widgetu czatu
     );
   }
 
@@ -281,51 +241,128 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   Widget buildParticipantsList() {
-    return SizedBox(
-      height: 200, // Ustawiamy maksymalną wysokość kontenera
-      child: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('meetings')
-            .doc(widget.meeting.meetingId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data!.exists) {
-            var data = snapshot.data!.data() as Map<String, dynamic>;
-            List<Participant> participants = List<Participant>.from(
-                (data['participants'] as List).map((item) => Participant(
-                    name: item['name'],
-                    rating: item['rating'].toDouble(),
-                    userId: item['userId'])));
-            return ListView.builder(
-              shrinkWrap: true,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: participants.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.person, color: Colors.white),
-                  title: Text(participants[index].name,
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold)),
-                  subtitle: Text('Ocena: ${participants[index].rating}',
-                      style: const TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ParticipantProfilePage(
-                            participant: participants[index]),
-                      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Uczestnicy:',
+            style: TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(
+          height: 200, // Ustawiamy maksymalną wysokość kontenera
+          child: StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('meetings')
+                .doc(widget.meeting.meetingId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.exists) {
+                var data = snapshot.data!.data() as Map<String, dynamic>;
+                List<Participant> participants = List<Participant>.from(
+                    (data['participants'] as List).map((item) => Participant(
+                        name: item['name'],
+                        rating: item['rating'],
+                        userId: item['userId'])));
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: participants.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: const Icon(Icons.person, color: Colors.white),
+                      title: Text(participants[index].name,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      subtitle: Text('Ocena: ${participants[index].rating}',
+                          style: const TextStyle(color: Colors.white)),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ParticipantProfilePage(
+                                participant: participants[index]),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
-              },
-            );
-          } else if (snapshot.hasError) {
-            return Text("Error: ${snapshot.error}");
-          }
-          return const CircularProgressIndicator();
-        },
-      ),
+              } else if (snapshot.hasError) {
+                return Text("Error: ${snapshot.error}");
+              }
+              return const CircularProgressIndicator();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildWaitingList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Lista oczekujących:',
+            style: TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(
+          height: 200, // Ustawiamy maksymalną wysokość kontenera
+          child: StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('meetings')
+                .doc(widget.meeting.meetingId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.exists) {
+                var data = snapshot.data!.data() as Map<String, dynamic>;
+                List<Participant> waitingList = List<Participant>.from(
+                    (data['waitingList'] as List).map((item) => Participant(
+                        name: item['name'],
+                        rating: item['rating'],
+                        userId: item['userId'])));
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: waitingList.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: const Icon(Icons.person, color: Colors.white),
+                      title: Text(waitingList[index].name,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                      subtitle: Text('Ocena: ${waitingList[index].rating}',
+                          style: const TextStyle(color: Colors.white)),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ParticipantProfilePage(
+                                participant: waitingList[index]),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return Text("Error: ${snapshot.error}");
+              }
+              return const CircularProgressIndicator();
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -408,8 +445,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           backgroundColor: MaterialStateProperty.resolveWith<Color>(
             (Set<MaterialState> states) {
               if (joined) {
-                return Colors
-                    .red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
+                return Colors.red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
               }
               return orange;
             },
@@ -417,8 +453,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           foregroundColor: MaterialStateProperty.all(white),
         ),
         child: Icon(joined ? Icons.remove : Icons.add,
-            color:
-                white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
+            color: white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
       ),
     );
   }
@@ -464,10 +499,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   if (currentUser != null) {
                     Participant currentParticipant = participants.firstWhere(
                         (p) => p.userId == currentUser.uid,
-                        orElse: () => Participant(
-                            name: 'Anonim',
-                            rating: 0,
-                            userId: currentUser.uid));
+                        orElse: () => waitingList.firstWhere(
+                            (p) => p.userId == currentUser.uid,
+                            orElse: () => Participant(
+                                name: 'Anonim',
+                                rating: 0,
+                                userId: currentUser.uid)));
                     await DatabaseService(uid: currentUser.uid)
                         .removeMeetingParticipant(
                             widget.meeting.meetingId, currentParticipant);
@@ -547,17 +584,20 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                         .addMeetingParticipant(
                             widget.meeting.meetingId, newParticipant);
                     updateParticipantsList(); // Ponownie załaduj uczestników
-                    String dateTimeString = '${widget.meeting.date}/${widget.meeting.time}';
+                    String dateTimeString =
+                        '${widget.meeting.date}/${widget.meeting.time}';
                     List<String> dateTimeParts = dateTimeString.split('/');
                     String formattedDate =
                         '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
                     String formattedTime = dateTimeParts[3].padLeft(5, '0');
-                    String formattedDateTimeString = '$formattedDate $formattedTime';
+                    String formattedDateTimeString =
+                        '$formattedDate $formattedTime';
 
-                    // Parsowanie do obiektu DateTime
                     DateTime meetingDateTime =
-                        DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
-                    PushNotifications().scheduleNotification(widget.meeting.name, meetingDateTime);
+                        DateTime.tryParse(formattedDateTimeString) ??
+                            DateTime.now();
+                    PushNotifications().scheduleNotification(
+                        widget.meeting.name, meetingDateTime);
                     eventBus.fire(
                         ParticipantChangedEvent()); // Wyślij powiadomienie
                     setState(() => joined = true);
@@ -590,14 +630,40 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           await placemarkFromCoordinates(latitude, longitude);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks.first;
-        print(
-            "${place.street}, ${place.locality}, ${place.postalCode}, ${place.country},  ${place.administrativeArea},  ${place.name}");
         return "${place.locality}, ${place.street}";
       }
       return "Nie można znaleźć adresu";
     } catch (e) {
       return "Błąd: $e";
     }
+  }
+
+  void drawTeams() {
+    setState(() {
+      isLoading = true;
+    });
+
+    Future.delayed(const Duration(seconds: 2), () {
+      List<Participant> shuffledParticipants = List.from(participants);
+      shuffledParticipants.shuffle(Random());
+
+      int halfSize = (shuffledParticipants.length / 2).ceil();
+      teamA = shuffledParticipants.sublist(0, halfSize);
+      teamB = shuffledParticipants.sublist(halfSize);
+
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
+
+  Widget buildChatSection(String meetingId) {
+    return Container(
+      constraints: const BoxConstraints(maxHeight: 390),
+      padding: const EdgeInsets.all(4.0),
+      child: GroupChatPage(
+          meetingId: meetingId), // Przekazujesz meetingId do widgetu czatu
+    );
   }
 }
 

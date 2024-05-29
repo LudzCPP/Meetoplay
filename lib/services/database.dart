@@ -45,14 +45,12 @@ class DatabaseService {
         'waitListCount': waitListCount,
         'organizerName': organizerName,
         'organizerRating': organizerRating,
-        'participants': {
-          for (var participant in participants)
-            {
-              'name': FirebaseAuth.instance.currentUser!.displayName ?? "Anonim",
-              'rating': 0,
-              'userId': FirebaseAuth.instance.currentUser!.uid,
-            }
-        },
+        'participants': participants.map((p) => {
+          'name': p.name,
+          'rating': p.rating,
+          'userId': p.userId,
+        }).toList(),
+        'waitingList': [],
         'ownerId': ownerId
       });
     } catch (e) {
@@ -74,6 +72,7 @@ class DatabaseService {
       String organizerName,
       double organizerRating,
       List<Participant> participants,
+      List<Participant> waitingList,
       String ownerId) async {
     try {
       DocumentReference meetingRef = meetingsCollection.doc(meetingId);
@@ -93,14 +92,98 @@ class DatabaseService {
         'waitListCount': waitListCount,
         'organizerName': organizerName,
         'organizerRating': organizerRating,
-        'participants': {
-          for (var participant in participants) {'participant': participant}
-        },
+        'participants': participants.map((p) => {
+          'name': p.name,
+          'rating': p.rating,
+          'userId': p.userId,
+        }).toList(),
+        'waitingList': waitingList.map((p) => {
+          'name': p.name,
+          'rating': p.rating,
+          'userId': p.userId,
+        }).toList(),
         'ownerId': ownerId
       });
     } catch (e) {
-      print('Błąd podczas dodawania spotkania: $e');
+      print('Błąd podczas aktualizacji spotkania: $e');
     }
+  }
+
+  Future<void> addMeetingParticipant(String meetingId, Participant newParticipant) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    DocumentSnapshot meetingDoc = await meetingRef.get();
+    var data = meetingDoc.data() as Map<String, dynamic>;
+    List participants = data['participants'];
+
+    if (participants.length < data['maxParticipants']) {
+      await meetingRef.update({
+        'participants': FieldValue.arrayUnion([{
+          'name': newParticipant.name,
+          'rating': newParticipant.rating,
+          'userId': newParticipant.userId,
+        }]),
+      });
+    } else {
+      await addWaitingListParticipant(meetingId, newParticipant);
+    }
+  }
+
+  Future<void> addWaitingListParticipant(String meetingId, Participant newParticipant) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    await meetingRef.update({
+      'waitingList': FieldValue.arrayUnion([{
+        'name': newParticipant.name,
+        'rating': newParticipant.rating,
+        'userId': newParticipant.userId,
+      }]),
+    });
+  }
+
+  Future<void> removeMeetingParticipant(String meetingId, Participant participant) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    await meetingRef.update({
+      'participants': FieldValue.arrayRemove([{
+        'name': participant.name,
+        'rating': participant.rating,
+        'userId': participant.userId,
+      }]),
+    });
+    await moveParticipantFromWaitingListToParticipants(meetingId);
+  }
+
+  Future<void> moveParticipantFromWaitingListToParticipants(String meetingId) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    DocumentSnapshot meetingDoc = await meetingRef.get();
+    var data = meetingDoc.data() as Map<String, dynamic>;
+    List participants = data['participants'];
+    List waitingList = data['waitingList'];
+
+    if (participants.length < data['maxParticipants'] && waitingList.isNotEmpty) {
+      var nextParticipant = waitingList.removeAt(0);
+      await meetingRef.update({
+        'participants': FieldValue.arrayUnion([nextParticipant]),
+        'waitingList': waitingList,
+      });
+    }
+  }
+
+  Future<bool> isUserParticipant(String meetingId, String userId) async {
+    try {
+      DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
+
+      if (meetingDoc.exists) {
+        List<dynamic> participants = meetingDoc['participants'];
+        for (var participant in participants) {
+          if (participant['userId'] == userId) {
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      print('Błąd podczas sprawdzania uczestnictwa użytkownika: $e');
+    }
+
+    return false;
   }
 
   Stream<QuerySnapshot> get meetings {
@@ -144,67 +227,23 @@ class DatabaseService {
       print(e.toString());
     }
   }
-
-  Future<void> addMeetingParticipant(
-      String meetingId, Participant newParticipant) async {
-    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+  
+  Future<bool> isUserInWaitingList(String meetingId, String userId) async {
     try {
-      await meetingRef.update({
-        'participants': FieldValue.arrayUnion([
-          {
-            'name': newParticipant.name,
-            'rating': newParticipant.rating,
-            'userId': newParticipant.userId
-          }
-        ]),
-      });
-    } catch (e) {
-      print('Błąd podczas dodawania uczestnika: $e');
-    }
-  }
+      DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
 
-  Future<void> removeMeetingParticipant(
-      String meetingId, Participant participant) async {
-    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
-    try {
-      await meetingRef.update({
-        'participants': FieldValue.arrayRemove([
-          {
-            'name': participant.name,
-            'rating': participant.rating,
-            'userId': participant.userId
-          }
-        ]),
-      });
-    } catch (e) {
-      print('Błąd podczas usuwania uczestnika: $e');
-    }
-  }
-
-  Future<bool> isUserParticipant(String meetingId, String userId) async {
-    try {
-      // Pobierz dokument wydarzenia
-      DocumentSnapshot meetingDoc =
-          await meetingsCollection.doc(meetingId).get();
-
-      // Sprawdź czy dokument istnieje i czy zawiera listę uczestników
       if (meetingDoc.exists) {
-        // Pobierz listę uczestników z dokumentu
-        List<dynamic> participants = meetingDoc['participants'];
-
-        // Sprawdź czy użytkownik znajduje się na liście uczestników
-        for (var participant in participants) {
+        List<dynamic> waitingList = meetingDoc['waitingList'];
+        for (var participant in waitingList) {
           if (participant['userId'] == userId) {
-            // Zwróć true jeśli użytkownik jest uczestnikiem wydarzenia
             return true;
           }
         }
       }
     } catch (e) {
-      print('Błąd podczas sprawdzania uczestnictwa użytkownika: $e');
+      print('Błąd podczas sprawdzania obecności użytkownika na liście oczekujących: $e');
     }
 
-    // Zwróć false jeśli użytkownik nie jest uczestnikiem wydarzenia lub wystąpił błąd
     return false;
   }
 }

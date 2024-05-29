@@ -358,8 +358,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 style: const TextStyle(color: white),
                 items: List<DropdownMenuItem<int>>.generate(49, (int index) {
                   return DropdownMenuItem<int>(
-                    value: index + 2,
-                    child: Text('${index + 2}'),
+                    value: index + 1,
+                    child: Text('${index + 1}'),
                   );
                 }),
                 onChanged: (int? value) {

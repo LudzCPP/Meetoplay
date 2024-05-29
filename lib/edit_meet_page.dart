@@ -491,6 +491,7 @@ class _EditMeetPageState extends State<EditMeetPage> {
                               "Organizer",
                           4.5, // Example rating
                           [],
+                          [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
                         Navigator.of(context).pop();
