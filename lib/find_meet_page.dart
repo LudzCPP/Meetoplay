@@ -237,7 +237,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
       bool matchesLevel =
           _selectedLevel == null || meeting.skillLevel == _selectedLevel;
       bool matchesFreeSpots = !_areFreeSpotsAvailable ||
-          (meeting.participantsCount > meeting.registeredCount);
+          (meeting.maxParticipants > meeting.registeredCount);
       bool matchesDate = _selectedDate == null ||
           meeting.date ==
               "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";

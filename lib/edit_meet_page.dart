@@ -63,7 +63,7 @@ class _EditMeetPageState extends State<EditMeetPage> {
     _searchController = TextEditingController();
     _selectedSport = widget.meeting.category;
     _selectedLevel = widget.meeting.skillLevel;
-    _selectedMaxParticipants = widget.meeting.participantsCount;
+    _selectedMaxParticipants = widget.meeting.maxParticipants;
     _isOrganizerParticipating = widget.meeting.participants
         .contains(FirebaseAuth.instance.currentUser!.uid);
     _selectedLocation = widget.meeting.location;

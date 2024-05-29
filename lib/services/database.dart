@@ -19,7 +19,7 @@ class DatabaseService {
       String time,
       String category,
       String skillLevel,
-      int participantsCount,
+      int maxParticipants,
       int registeredCount,
       int waitListCount,
       String organizerName,
@@ -40,14 +40,18 @@ class DatabaseService {
         'time': time,
         'category': category,
         'skillLevel': skillLevel,
-        'participantsCount': participantsCount,
+        'maxParticipants': maxParticipants,
         'registeredCount': registeredCount,
         'waitListCount': waitListCount,
         'organizerName': organizerName,
         'organizerRating': organizerRating,
         'participants': {
           for (var participant in participants)
-            {'participant': participant.userId}
+            {
+              'name': FirebaseAuth.instance.currentUser!.displayName ?? "Anonim",
+              'rating': 0,
+              'userId': FirebaseAuth.instance.currentUser!.uid,
+            }
         },
         'ownerId': ownerId
       });
@@ -64,7 +68,7 @@ class DatabaseService {
       String time,
       String category,
       String skillLevel,
-      int participantsCount,
+      int maxParticipants,
       int registeredCount,
       int waitListCount,
       String organizerName,
@@ -84,7 +88,7 @@ class DatabaseService {
         'time': time,
         'category': category,
         'skillLevel': skillLevel,
-        'participantsCount': participantsCount,
+        'maxParticipants': maxParticipants,
         'registeredCount': registeredCount,
         'waitListCount': waitListCount,
         'organizerName': organizerName,
@@ -146,7 +150,6 @@ class DatabaseService {
     DocumentReference meetingRef = meetingsCollection.doc(meetingId);
     try {
       await meetingRef.update({
-
         'participants': FieldValue.arrayUnion([
           {
             'name': newParticipant.name,
@@ -160,23 +163,23 @@ class DatabaseService {
     }
   }
 
-  Future<void> removeMeetingParticipant(String meetingId, Participant participant) async {
-  DocumentReference meetingRef = meetingsCollection.doc(meetingId);
-  try {
-    await meetingRef.update({
-      'participants': FieldValue.arrayRemove([
-        {
-          'name': participant.name,
-          'rating': participant.rating,
-          'userId': participant.userId
-        }
-      ]),
-    });
-  } catch (e) {
-    print('Błąd podczas usuwania uczestnika: $e');
+  Future<void> removeMeetingParticipant(
+      String meetingId, Participant participant) async {
+    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
+    try {
+      await meetingRef.update({
+        'participants': FieldValue.arrayRemove([
+          {
+            'name': participant.name,
+            'rating': participant.rating,
+            'userId': participant.userId
+          }
+        ]),
+      });
+    } catch (e) {
+      print('Błąd podczas usuwania uczestnika: $e');
+    }
   }
-}
-
 
   Future<bool> isUserParticipant(String meetingId, String userId) async {
     try {

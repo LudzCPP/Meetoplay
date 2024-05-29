@@ -380,11 +380,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 onChanged: (bool? value) {
                   setState(() {
                     _isOrganizerParticipating = value!;
-                    Participant participant = Participant(
-                        name: currentUser?.displayName ?? 'brak nazwy',
-                        rating: 4,
-                        userId: currentUser!.uid);
-                    currentParticipants.add(participant);
                   });
                 },
                 controlAffinity: ListTileControlAffinity.leading,
@@ -473,62 +468,78 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                       if (_formKey.currentState!.validate()) {
                         String meetingId =
                             DateTime.now().millisecondsSinceEpoch.toString();
-                        DatabaseService(
-                                uid: FirebaseAuth.instance.currentUser!.uid)
-                            .createMeeting(
-                          _eventNameController.text,
-                          _selectedLocation,
-                          _dateController.text,
-                          _timeController.text,
-                          _selectedSport.toString(),
-                          _selectedLevel.toString(),
-                          _selectedMaxParticipants!.toInt(),
-                          0,
-                          0,
-                          FirebaseAuth.instance.currentUser!.displayName ??
-                              "Organizer",
-                          4.5, // Example rating
-                          [],
-                          FirebaseAuth.instance.currentUser!.uid,
-                        );
+                        List<Participant> participants = [];
 
-                        // Create a new collection in Firebase for meeting chat
-                        FirebaseFirestore.instance
-                            .collection('meetingchat_$meetingId')
-                            .doc('initialDoc')
-                            .set({});
+                        // Add organizer as a participant if they choose to participate
+                        if (_isOrganizerParticipating) {
+                          Participant newParticipant = Participant(
+                            name: currentUser?.displayName ?? "Anonim",
+                            rating: 0,
+                            userId: currentUser!.uid,
+                          );
+                          participants.add(newParticipant);
+                        }
 
-                        Navigator.of(context)
-                            .popUntil((route) => route.isFirst);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Spotkanie zostało dodane!'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
                         if (_formKey.currentState!.validate()) {
-                          // Dostosowanie formatu daty i czasu
-                          String dateTimeString =
-                              '${_dateController.text}/${_timeController.text}';
-                          List<String> dateTimeParts =
-                              dateTimeString.split('/');
-                          String formattedDate =
-                              '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
-                          String formattedTime =
-                              dateTimeParts[3].padLeft(5, '0');
-                          String formattedDateTimeString =
-                              '$formattedDate $formattedTime';
+                          String meetingId =
+                              DateTime.now().millisecondsSinceEpoch.toString();
+                          DatabaseService(
+                                  uid: FirebaseAuth.instance.currentUser!.uid)
+                              .createMeeting(
+                            _eventNameController.text,
+                            _selectedLocation,
+                            _dateController.text,
+                            _timeController.text,
+                            _selectedSport.toString(),
+                            _selectedLevel.toString(),
+                            _selectedMaxParticipants!.toInt(),
+                            participants.length,
+                            0,
+                            FirebaseAuth.instance.currentUser!.displayName ??
+                                "Organizer",
+                            4.5, // Example rating
+                            _isOrganizerParticipating ? participants : [],
+                            FirebaseAuth.instance.currentUser!.uid,
+                          );
 
-                          // Parsowanie do obiektu DateTime
-                          DateTime meetingDateTime =
-                              DateTime.tryParse(formattedDateTimeString) ??
-                                  DateTime.now();
-                          //DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
-                          //scheduleNotification(_eventNameController.text, meetingDateTime);
-                          //var psh = PushNotifications();
+                          // Create a new collection in Firebase for meeting chat
+                          FirebaseFirestore.instance
+                              .collection('meetingchat_$meetingId')
+                              .doc('initialDoc')
+                              .set({});
 
-                          PushNotifications().scheduleNotification(
-                              _eventNameController.text, meetingDateTime);
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Spotkanie zostało dodane!'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                          if (_formKey.currentState!.validate()) {
+                            // Dostosowanie formatu daty i czasu
+                            String dateTimeString =
+                                '${_dateController.text}/${_timeController.text}';
+                            List<String> dateTimeParts =
+                                dateTimeString.split('/');
+                            String formattedDate =
+                                '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
+                            String formattedTime =
+                                dateTimeParts[3].padLeft(5, '0');
+                            String formattedDateTimeString =
+                                '$formattedDate $formattedTime';
+
+                            // Parsowanie do obiektu DateTime
+                            DateTime meetingDateTime =
+                                DateTime.tryParse(formattedDateTimeString) ??
+                                    DateTime.now();
+                            //DateTime eventDateTime = DateTime.parse(_dateController.text + ' ' + _timeController.text);
+                            //scheduleNotification(_eventNameController.text, meetingDateTime);
+                            //var psh = PushNotifications();
+
+                            PushNotifications().scheduleNotification(
+                                _eventNameController.text, meetingDateTime);
+                          }
                         }
                       }
                     },

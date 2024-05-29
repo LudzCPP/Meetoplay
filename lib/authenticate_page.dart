@@ -29,8 +29,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'last_name': '',
         'city': '',
         'birthdate': null,
-        'role': 'User', // Dodanie domyślnej roli
-        'banned': false, // Domyślnie użytkownik nie jest zbanowany
+        'role': 'User',
+        'banned': false,
       });
     } catch (e) {
       Fluttertoast.showToast(

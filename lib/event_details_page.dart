@@ -275,7 +275,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           height: 10,
         ),
         buildDetailRow(Icons.person_3_rounded,
-            'Maksymalna liczba uczestników: ${widget.meeting.participantsCount}'),
+            'Maksymalna liczba uczestników: ${widget.meeting.maxParticipants}'),
       ],
     );
   }

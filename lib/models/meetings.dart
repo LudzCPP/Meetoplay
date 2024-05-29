@@ -9,7 +9,7 @@ class Meeting {
   String time;
   String category;
   String skillLevel;
-  int participantsCount;
+  int maxParticipants;
   int registeredCount;
   int waitListCount;
   String organizerName;
@@ -26,7 +26,7 @@ class Meeting {
     required this.time,
     required this.category,
     required this.skillLevel,
-    required this.participantsCount,
+    required this.maxParticipants,
     required this.registeredCount,
     required this.waitListCount,
     required this.organizerName,

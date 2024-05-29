@@ -58,7 +58,7 @@ class EventList extends StatelessWidget {
                     Text('Time: ${data['time']}'),
                     Text('Category: ${data['category']}'),
                     Text('Skill Level: ${data['skillLevel']}'),
-                    Text('Participants: ${data['registeredCount']} / ${data['participantsCount']}'),
+                    Text('Participants: ${data['registeredCount']} / ${data['maxParticipants']}'),
                     Text('Status: ${data['status']}'),
                   ],
                 ),

@@ -69,7 +69,7 @@ class MeetMarker extends Marker {
                             const TextSpan(text: '\n'),
                             TextSpan(
                               text:
-                                  'Liczba zajętych miejsc: $occupiedSpots / ${meeting.participantsCount}',
+                                  'Liczba zajętych miejsc: $occupiedSpots / ${meeting.maxParticipants}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
