@@ -94,41 +94,117 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       body: isEnded
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: buildMeetingDetails(),
-                  ),
-                  buildParticipantsList(),
-                  buildWaitingList(),
-                  if (currentUser?.uid == widget.meeting.ownerId)
-                    buildEndEventButton(),
-                  buildEditButton(),
-                  buildJoinButton(),
-                  buildDrawTeamsButton(),
-                  buildTeamsDisplay(),
-                  buildChatSection(widget.meeting.meetingId),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildMeetingDetails(),
+                    const SizedBox(height: 20),
+                    buildParticipantsList(),
+                    const SizedBox(height: 20),
+                    buildWaitingList(),
+                    const SizedBox(height: 20),
+                    if (currentUser?.uid == widget.meeting.ownerId)
+                      buildEndEventButton(),
+                    const SizedBox(height: 5),
+                    buildEditButton(),
+                    const SizedBox(height: 5),
+                    buildJoinButton(),
+                    const SizedBox(height: 5),
+                    buildDrawTeamsButton(),
+                    const SizedBox(height: 20),
+                    buildTeamsDisplay(),
+                    const SizedBox(height: 20),
+                    buildChatSection(widget.meeting.meetingId),
+                  ],
+                ),
               ),
             ),
     );
   }
 
   Widget buildDrawTeamsButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      child: ElevatedButton(
-        onPressed: drawTeams,
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.green),
-          foregroundColor: MaterialStateProperty.all(white),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: ElevatedButton(
+      onPressed: drawTeams,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: darkBlue,
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: const Text('Wylosuj składy'),
       ),
-    );
-  }
+      child: const Text('Wylosuj składy', style: TextStyle(fontSize: 16, color: white)),
+    ),
+  );
+}
+
+Widget buildEndEventButton() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: ElevatedButton(
+      onPressed: () => endEvent(),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: darkBlue,
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: const Text('Zakończ wydarzenie', style: TextStyle(fontSize: 16, color: white)),
+    ),
+  );
+}
+
+Widget buildEditButton() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditMeetPage(meeting: widget.meeting),
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: darkBlue,
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: const Text('Edytuj spotkanie', style: TextStyle(fontSize: 16, color: white)),
+    ),
+  );
+}
+
+Widget buildJoinButton() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: ElevatedButton(
+      onPressed: () {
+        if (joined) {
+          showLeaveDialog();
+        } else {
+          showJoinDialog();
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: joined ? darkBlue : darkBlue,
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      child: Text(joined ? 'Opuść' : 'Dołącz',
+          style: const TextStyle(fontSize: 16, color: white)),
+    ),
+  );
+}
 
   Widget buildTeamsDisplay() {
     return isLoading
@@ -172,66 +248,53 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           );
   }
 
-  Widget buildEndEventButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      child: ElevatedButton(
-        onPressed: () => endEvent(),
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.red),
-          foregroundColor: MaterialStateProperty.all(white),
-        ),
-        child: const Text('Zakończ wydarzenie'),
-      ),
-    );
-  }
-
   void endEvent() async {
-  final batch = FirebaseFirestore.instance.batch();
+    final batch = FirebaseFirestore.instance.batch();
 
-  // Add event to history for each participant
-  for (Participant participant in participants) {
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(participant.userId);
-    final userDoc = await userDocRef.get();
+    // Add event to history for each participant
+    for (Participant participant in participants) {
+      final userDocRef =
+          FirebaseFirestore.instance.collection('users').doc(participant.userId);
+      final userDoc = await userDocRef.get();
 
-    if (userDoc.exists) {
-      final userData = userDoc.data() as Map<String, dynamic>;
-      final history = List.from(userData['history'] ?? []);
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final history = List.from(userData['history'] ?? []);
 
-      history.add({
-        'meetingId': widget.meeting.meetingId,
-        'name': widget.meeting.name,
-        'date': widget.meeting.date,
-        'time': widget.meeting.time,
-        'category': widget.meeting.category,
-        'skillLevel': widget.meeting.skillLevel,
-        'organizerName': widget.meeting.organizerName,
-        'organizerRating': widget.meeting.organizerRating,
-        'participants': widget.meeting.participants.map((p) => {
-          'name': p.name,
-          'userId': p.userId,
-        }).toList(),
-        'ratings': {} // Add an empty ratings field
-      });
+        history.add({
+          'meetingId': widget.meeting.meetingId,
+          'name': widget.meeting.name,
+          'date': widget.meeting.date,
+          'time': widget.meeting.time,
+          'category': widget.meeting.category,
+          'skillLevel': widget.meeting.skillLevel,
+          'organizerName': widget.meeting.organizerName,
+          'organizerRating': widget.meeting.organizerRating,
+          'participants': widget.meeting.participants.map((p) => {
+                'name': p.name,
+                'userId': p.userId,
+              }).toList(),
+          'ratings': {} // Add an empty ratings field
+        });
 
-      batch.update(userDocRef, {'history': history});
+        batch.update(userDocRef, {'history': history});
+      }
     }
+
+    // Delete event from meetings collection
+    final meetingDocRef =
+        FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
+    batch.delete(meetingDocRef);
+
+    await batch.commit();
+
+    setState(() {
+      isEnded = true;
+    });
+
+    Navigator.of(context).pop();
+    Navigator.of(context).pop();
   }
-
-  // Delete event from meetings collection
-  final meetingDocRef = FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
-  batch.delete(meetingDocRef);
-
-  await batch.commit();
-
-  setState(() {
-    isEnded = true;
-  });
-
-  Navigator.of(context).pop();
-  Navigator.of(context).pop();
-}
-
 
   Widget buildMeetingDetails() {
     return Column(
@@ -239,22 +302,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       children: [
         buildDetailRow(
             Icons.sports_soccer, 'Sport: ${widget.meeting.category}'),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         buildDetailRow(Icons.bar_chart, 'Poziom: ${widget.meeting.skillLevel}'),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         buildLocation(),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         buildDetailRow(Icons.calendar_today,
             'Data: ${widget.meeting.date} ${widget.meeting.time}'),
-        const SizedBox(
-          height: 10,
-        ),
+        const SizedBox(height: 10),
         buildDetailRow(Icons.person_3_rounded,
             'Maksymalna liczba uczestników: ${widget.meeting.maxParticipants}'),
       ],
@@ -274,7 +329,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           ),
         ),
         SizedBox(
-          height: 200, // Ustawiamy maksymalną wysokość kontenera
+          height: 200,
           child: StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('meetings')
@@ -293,23 +348,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: participants.length,
                   itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: const Icon(Icons.person, color: Colors.white),
-                      title: Text(participants[index].name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      subtitle: Text('Ocena: ${participants[index].rating}',
-                          style: const TextStyle(color: Colors.white)),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ParticipantProfilePage(
-                                participant: participants[index]),
-                          ),
-                        );
-                      },
+                    return Card(
+                      color: lightBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.person, color: Colors.white),
+                        title: Text(participants[index].name,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        subtitle: Text('Ocena: ${participants[index].rating}',
+                            style: const TextStyle(color: Colors.white)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ParticipantProfilePage(
+                                  participant: participants[index]),
+                            ),
+                          );
+                        },
+                      ),
                     );
                   },
                 );
@@ -337,7 +400,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           ),
         ),
         SizedBox(
-          height: 200, // Ustawiamy maksymalną wysokość kontenera
+          height: 200,
           child: StreamBuilder<DocumentSnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('meetings')
@@ -356,23 +419,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: waitingList.length,
                   itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: const Icon(Icons.person, color: Colors.white),
-                      title: Text(waitingList[index].name,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold)),
-                      subtitle: Text('Ocena: ${waitingList[index].rating}',
-                          style: const TextStyle(color: Colors.white)),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ParticipantProfilePage(
-                                participant: waitingList[index]),
-                          ),
-                        );
-                      },
+                    return Card(
+                      color: lightBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: ListTile(
+                        leading: const Icon(Icons.person, color: Colors.white),
+                        title: Text(waitingList[index].name,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        subtitle: Text('Ocena: ${waitingList[index].rating}',
+                            style: const TextStyle(color: Colors.white)),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ParticipantProfilePage(
+                                  participant: waitingList[index]),
+                            ),
+                          );
+                        },
+                      ),
                     );
                   },
                 );
@@ -430,57 +501,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Widget buildEditButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditMeetPage(meeting: widget.meeting),
-            ),
-          );
-        },
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(orange),
-          foregroundColor: MaterialStateProperty.all(white),
-        ),
-        child: const Text('Edytuj spotkanie'),
-      ),
-    );
-  }
-
-  Widget buildJoinButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 32.0),
-      child: ElevatedButton(
-        onPressed: () {
-          if (joined) {
-            showLeaveDialog(); // Pokaż dialog potwierdzający opuszczenie wydarzenia
-          } else {
-            showJoinDialog(); // Pokaż dialog potwierdzający dołączenie do wydarzenia
-          }
-        },
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (joined) {
-                return Colors
-                    .red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
-              }
-              return orange;
-            },
-          ),
-          foregroundColor: MaterialStateProperty.all(white),
-        ),
-        child: Icon(joined ? Icons.remove : Icons.add,
-            color:
-                white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
-      ),
-    );
-  }
-
   void showLeaveDialog() {
     showDialog(
       context: context,
@@ -506,9 +526,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 backgroundColor: orange,
               ),
               onPressed: () async {
-                Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
+                Navigator.of(context).pop();
 
-                // Pokaż ekran ładowania
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -531,10 +550,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     await DatabaseService(uid: currentUser.uid)
                         .removeMeetingParticipant(
                             widget.meeting.meetingId, currentParticipant);
-                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    updateParticipantsList();
                     PushNotifications().unscheduleNotification(0);
-                    eventBus.fire(
-                        ParticipantChangedEvent()); // Wyślij powiadomienie
+                    eventBus.fire(ParticipantChangedEvent());
                     setState(() => joined = false);
                   }
                 } catch (e) {
@@ -542,8 +560,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 }
 
                 if (mounted) {
-                  navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
-                  navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                  navigatorKey.currentState?.pop();
+                  navigatorKey.currentState?.pop();
                   navigatorKey.currentState?.pop();
                 }
               },
@@ -584,9 +602,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 backgroundColor: orange,
               ),
               onPressed: () async {
-                Navigator.of(context).pop(); // Zamknij dialog potwierdzenia
+                Navigator.of(context).pop();
 
-                // Pokaż ekran ładowania
                 showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -606,7 +623,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     await DatabaseService(uid: currentUser.uid)
                         .addMeetingParticipant(
                             widget.meeting.meetingId, newParticipant);
-                    updateParticipantsList(); // Ponownie załaduj uczestników
+                    updateParticipantsList();
                     String dateTimeString =
                         '${widget.meeting.date}/${widget.meeting.time}';
                     List<String> dateTimeParts = dateTimeString.split('/');
@@ -621,8 +638,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                             DateTime.now();
                     PushNotifications().scheduleNotification(
                         widget.meeting.name, meetingDateTime);
-                    eventBus.fire(
-                        ParticipantChangedEvent()); // Wyślij powiadomienie
+                    eventBus.fire(ParticipantChangedEvent());
                     setState(() => joined = true);
                   }
                 } catch (e) {
@@ -630,8 +646,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 }
 
                 if (mounted) {
-                  navigatorKey.currentState?.pop(); // Zamknij ekran ładowania
-                  navigatorKey.currentState?.pop(); // Zamknij EventDetailsPage
+                  navigatorKey.currentState?.pop();
+                  navigatorKey.currentState?.pop();
                   navigatorKey.currentState?.pop();
                 }
               },

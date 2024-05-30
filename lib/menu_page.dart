@@ -16,7 +16,6 @@ class MenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Function to find the nearest meeting in terms of time
     Meeting? findNearestMeeting(List<Meeting> meetings) {
       if (meetings.isEmpty) return null;
 
@@ -27,8 +26,14 @@ class MenuPage extends StatelessWidget {
       // Znajdź najbliższe wydarzenie
       Meeting? nearestMeeting;
       Duration? nearestDuration;
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
       for (Meeting meeting in meetings) {
+        // Sprawdź, czy bieżący użytkownik jest uczestnikiem
+        bool isParticipant = meeting.participants
+            .any((participant) => participant.userId == currentUserId);
+        if (!isParticipant) continue;
+
         // Dostosowanie formatu daty i czasu
         String dateTimeString = '${meeting.date}/${meeting.time}';
         List<String> dateTimeParts = dateTimeString.split('/');

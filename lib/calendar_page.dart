@@ -3,6 +3,7 @@ import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/models/meetings.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -15,43 +16,33 @@ class _CalendarPageState extends State<CalendarPage> {
   late DateTime _selectedDay;
   late DateTime _focusedDay;
   List<Meeting> _selectedEvents = [];
-  Map<DateTime, List<String>> _allEvents = {};
+  final Map<DateTime, List<String>> _allEvents = {};
 
   @override
   void initState() {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-    DateTime now = DateTime.utc(
-        DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    _allEvents = {
-      now: ['Spotkanie biznesowe'],
-      now.add(const Duration(days: 2)): [
-        'Wycieczka szkolna',
-        'Spotkanie klubu książki'
-      ],
-      now.add(const Duration(days: 3)): ['Urodziny przyjaciela'],
-    };
     _selectedEvents = _getEventsForDay(_selectedDay);
   }
 
   List<Meeting> _getEventsForDay(DateTime day) {
     List<Meeting> meetings = [];
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
     for (var meeting in globalMeetings) {
       if (meeting.date == '${day.day}/${day.month}/${day.year}') {
-        meetings.add(meeting);
-        print(meeting.name);
+        if (meeting.participants.any((participant) => participant.userId == currentUserId)) {
+          meetings.add(meeting);
+        }
       }
     }
     return meetings;
-    //return _allEvents[DateTime.utc(day.year, day.month, day.day)] ?? [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
-      _selectedDay =
-          DateTime.utc(selectedDay.year, selectedDay.month, selectedDay.day);
+      _selectedDay = DateTime.utc(selectedDay.year, selectedDay.month, selectedDay.day);
       _focusedDay = focusedDay;
       _selectedEvents = _getEventsForDay(_selectedDay);
     });
@@ -60,12 +51,17 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      backgroundColor: darkBlue,
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
             Card(
               color: darkBlue,
               margin: const EdgeInsets.all(8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
               child: TableCalendar(
                 firstDay: DateTime.utc(2010, 10, 16),
                 lastDay: DateTime.utc(2030, 3, 14),
@@ -76,50 +72,75 @@ class _CalendarPageState extends State<CalendarPage> {
                 onDaySelected: _onDaySelected,
                 eventLoader: _getEventsForDay,
                 calendarStyle: const CalendarStyle(
-                  todayDecoration:
-                      BoxDecoration(color: darkBlue, shape: BoxShape.circle),
-                  selectedDecoration:
-                      BoxDecoration(color: lightBlue, shape: BoxShape.circle),
-                  markerDecoration:
-                      BoxDecoration(color: pink, shape: BoxShape.circle),
+                  todayDecoration: BoxDecoration(
+                    color: lightBlue,
+                    shape: BoxShape.circle,
+                  ),
+                  selectedDecoration: BoxDecoration(
+                    color: pink,
+                    shape: BoxShape.circle,
+                  ),
+                  markerDecoration: BoxDecoration(
+                    color: orange,
+                    shape: BoxShape.circle,
+                  ),
                   weekendTextStyle: TextStyle(color: Colors.blueGrey),
                   defaultTextStyle: TextStyle(color: Colors.white),
                   outsideTextStyle: TextStyle(color: Colors.grey),
                 ),
                 daysOfWeekStyle: const DaysOfWeekStyle(
-                    weekdayStyle: TextStyle(
-                      color: pink,
-                    ),
-                    weekendStyle: TextStyle(
-                      color: pink,
-                    )),
+                  weekdayStyle: TextStyle(color: pink),
+                  weekendStyle: TextStyle(color: pink),
+                ),
                 daysOfWeekHeight: 30,
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: TextStyle(color: white, fontSize: 18),
+                  leftChevronIcon: Icon(Icons.chevron_left, color: white),
+                  rightChevronIcon: Icon(Icons.chevron_right, color: white),
+                ),
               ),
             ),
+            const SizedBox(height: 20),
             Expanded(
-              child: ListView.builder(
-                itemCount: _selectedEvents.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EventDetailsPage(meeting: _selectedEvents[index]),
-                        ),
-                      );
-                    },
-                    child: ListTile(
-                      title: Text(_selectedEvents[index].name,
-                          style: const TextStyle(color: Colors.white)),
-                      tileColor: lightBlue,
-                      leading: const Icon(Icons.event, color: Colors.orange),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
+              child: _selectedEvents.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: _selectedEvents.length,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          color: lightBlue,
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: ListTile(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => EventDetailsPage(
+                                      meeting: _selectedEvents[index]),
+                                ),
+                              );
+                            },
+                            title: Text(
+                              _selectedEvents[index].name,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            leading: const Icon(Icons.event, color: Colors.orange),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 10.0),
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                        'Brak wydarzeń tego dnia.',
+                        style: TextStyle(color: white.withOpacity(0.6)),
+                      ),
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
