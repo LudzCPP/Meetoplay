@@ -31,6 +31,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'birthdate': null,
         'role': 'User',
         'banned': false,
+        'history': [],
       });
     } catch (e) {
       Fluttertoast.showToast(

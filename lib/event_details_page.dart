@@ -195,22 +195,43 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void endEvent() async {
+  await FirebaseFirestore.instance
+      .collection('meetings')
+      .doc(widget.meeting.meetingId)
+      .update({'status': 'ended'});
+
+  for (Participant participant in participants) {
     await FirebaseFirestore.instance
-        .collection('meetings')
-        .doc(widget.meeting.meetingId)
-        .update({'status': 'ended'});
-
-    setState(() {
-      isEnded = true;
+        .collection('users')
+        .doc(participant.userId)
+        .update({
+      'history': FieldValue.arrayUnion([
+        {
+          'meetingId': widget.meeting.meetingId,
+          'name': widget.meeting.name,
+          'date': widget.meeting.date,
+          'time': widget.meeting.time,
+          'category': widget.meeting.category,
+          'skillLevel': widget.meeting.skillLevel,
+          'organizerName': widget.meeting.organizerName,
+          'organizerRating': widget.meeting.organizerRating,
+        }
+      ])
     });
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RatingPage(meeting: widget.meeting),
-      ),
-    );
   }
+
+  setState(() {
+    isEnded = true;
+  });
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => RatingPage(meeting: widget.meeting),
+    ),
+  );
+}
+
 
   Widget buildMeetingDetails() {
     return Column(

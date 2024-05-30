@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meetoplay/admin/admin_dashboard.dart';
 import 'authenticate_page.dart';
@@ -31,9 +31,11 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                  return const AdminDashboard();
-                },));
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return const AdminDashboard();
+                  },
+                ));
               },
               child: const Icon(
                 Icons.admin_panel_settings,
@@ -152,28 +154,100 @@ class ProfilePage extends StatelessWidget {
                         color: Colors.black,
                       ),
                     ),
-                    // Placeholder for events history
-                    Container(
-                      height: 200,
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 40),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Brak historii wydarzeń.',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ),
+                    const SizedBox(height: 20),
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .get(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return const Text(
+                            'Błąd wczytywania historii wydarzeń.',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+                        if (!snapshot.hasData || !snapshot.data!.exists) {
+                          return const Text(
+                            'Brak historii wydarzeń.',
+                            style: TextStyle(color: Colors.black54),
+                          );
+                        }
+
+                        var userData =
+                            snapshot.data!.data() as Map<String, dynamic>;
+                        List<dynamic> history = userData['history'] ?? [];
+
+                        if (history.isEmpty) {
+                          return const Text(
+                            'Brak historii wydarzeń.',
+                            style: TextStyle(color: Colors.black54),
+                          );
+                        }
+
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: history.length,
+                          itemBuilder: (context, index) {
+                            var event = history[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                side:
+                                    const BorderSide(color: darkBlue, width: 1),
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.all(16.0),
+                                title: Text(
+                                  event['name'],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: darkBlue,
+                                  ),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Data: ${event['date']} ${event['time']}',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Kategoria: ${event['category']}',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Organizator: ${event['organizerName']}',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                trailing: const Icon(Icons.chevron_right,
+                                    color: darkBlue),
+                                onTap: () {
+                                  // Tutaj możesz dodać akcję po kliknięciu na wydarzenie w historii
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 )

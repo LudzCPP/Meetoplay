@@ -52,6 +52,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'birthdate': _birthdate?.toIso8601String(),
           'role': 'User',
           'banned': false, // Domyślnie użytkownik nie jest zbanowany
+          'history': [], // Inicjalizacja pustej historii spotkań
         });
 
         Fluttertoast.showToast(
