@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +17,7 @@ class RatingPage extends StatefulWidget {
 
 class _RatingPageState extends State<RatingPage> {
   final Map<String, double> ratings = {};
+  final Map<String, double> newRatings = {};
 
   Future<Map<String, dynamic>> _getEventData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -66,6 +69,26 @@ class _RatingPageState extends State<RatingPage> {
 
       await userDocRef.update({'history': history});
     }
+  }
+  Future<void> _updateNewRatings() async {
+
+    newRatings.forEach((key, value) async {
+      final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(key);
+      final userDoc = await userDocRef.get();
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        var rating = userData['rating'];
+        int ratingCounter = userData['ratingCounter'];
+        rating = rating * ratingCounter;
+        ratingCounter+=1;
+        rating = rating + value;
+        rating = rating / ratingCounter;
+
+        await userDocRef.update({'rating': rating,
+        'ratingCounter': ratingCounter});
+      }
+    });
   }
 
   @override
@@ -149,6 +172,7 @@ class _RatingPageState extends State<RatingPage> {
                                     setState(
                                       () {
                                         ratings[userId] = rating;
+                                        newRatings[userId] = rating;
                                       },
                                     );
                                   },
@@ -162,6 +186,7 @@ class _RatingPageState extends State<RatingPage> {
                     child: ElevatedButton(
                       onPressed: () async {
                         await _submitRatings();
+                        await _updateNewRatings();
                         setState(() {});
                       },
                       style: ElevatedButton.styleFrom(

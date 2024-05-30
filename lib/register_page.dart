@@ -50,6 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'last_name': _lastNameController.text.trim(),
           'city': _cityController.text.trim(),
           'birthdate': _birthdate?.toIso8601String(),
+          'rating': 0,
+          'ratingCounter': 0,
           'role': 'User',
           'banned': false, // Domyślnie użytkownik nie jest zbanowany
           'history': [], // Inicjalizacja pustej historii spotkań
