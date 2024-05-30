@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meetoplay/admin/admin_dashboard.dart';
+import 'package:meetoplay/rating_page.dart';
 import 'authenticate_page.dart';
 import 'global_variables.dart';
 import 'wrapper.dart';
@@ -161,8 +162,7 @@ class ProfilePage extends StatelessWidget {
                           .doc(user.uid)
                           .get(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const CircularProgressIndicator();
                         }
                         if (snapshot.hasError) {
@@ -178,8 +178,7 @@ class ProfilePage extends StatelessWidget {
                           );
                         }
 
-                        var userData =
-                            snapshot.data!.data() as Map<String, dynamic>;
+                        var userData = snapshot.data!.data() as Map<String, dynamic>;
                         List<dynamic> history = userData['history'] ?? [];
 
                         if (history.isEmpty) {
@@ -199,8 +198,7 @@ class ProfilePage extends StatelessWidget {
                               margin: const EdgeInsets.symmetric(vertical: 8.0),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                side:
-                                    const BorderSide(color: darkBlue, width: 1),
+                                side: const BorderSide(color: darkBlue, width: 1),
                               ),
                               child: ListTile(
                                 contentPadding: const EdgeInsets.all(16.0),
@@ -229,19 +227,16 @@ class ProfilePage extends StatelessWidget {
                                         color: Colors.black54,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Organizator: ${event['organizerName']}',
-                                      style: const TextStyle(
-                                        color: Colors.black54,
-                                      ),
-                                    ),
                                   ],
                                 ),
-                                trailing: const Icon(Icons.chevron_right,
-                                    color: darkBlue),
+                                trailing: const Icon(Icons.chevron_right, color: darkBlue),
                                 onTap: () {
-                                  // Tutaj możesz dodać akcję po kliknięciu na wydarzenie w historii
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RatingPage(event: event),
+                                    ),
+                                  );
                                 },
                               ),
                             );

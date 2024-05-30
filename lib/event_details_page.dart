@@ -6,6 +6,7 @@ import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:meetoplay/main.dart';
+import 'package:meetoplay/map_page.dart';
 import 'package:meetoplay/participant_profile_page.dart';
 import 'package:meetoplay/rating_page.dart';
 import 'package:meetoplay/services/database.dart';
@@ -62,15 +63,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       waitingList = updatedWaitingList;
       isEnded = data['status'] == 'ended';
     });
-
-    if (isEnded) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => RatingPage(meeting: widget.meeting),
-        ),
-      );
-    }
   }
 
   void checkUserJoinStatus() async {
@@ -195,41 +187,49 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void endEvent() async {
-  await FirebaseFirestore.instance
-      .collection('meetings')
-      .doc(widget.meeting.meetingId)
-      .update({'status': 'ended'});
+  final batch = FirebaseFirestore.instance.batch();
 
+  // Add event to history for each participant
   for (Participant participant in participants) {
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(participant.userId)
-        .update({
-      'history': FieldValue.arrayUnion([
-        {
-          'meetingId': widget.meeting.meetingId,
-          'name': widget.meeting.name,
-          'date': widget.meeting.date,
-          'time': widget.meeting.time,
-          'category': widget.meeting.category,
-          'skillLevel': widget.meeting.skillLevel,
-          'organizerName': widget.meeting.organizerName,
-          'organizerRating': widget.meeting.organizerRating,
-        }
-      ])
-    });
+    final userDocRef = FirebaseFirestore.instance.collection('users').doc(participant.userId);
+    final userDoc = await userDocRef.get();
+
+    if (userDoc.exists) {
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final history = List.from(userData['history'] ?? []);
+
+      history.add({
+        'meetingId': widget.meeting.meetingId,
+        'name': widget.meeting.name,
+        'date': widget.meeting.date,
+        'time': widget.meeting.time,
+        'category': widget.meeting.category,
+        'skillLevel': widget.meeting.skillLevel,
+        'organizerName': widget.meeting.organizerName,
+        'organizerRating': widget.meeting.organizerRating,
+        'participants': widget.meeting.participants.map((p) => {
+          'name': p.name,
+          'userId': p.userId,
+        }).toList(),
+        'ratings': {} // Add an empty ratings field
+      });
+
+      batch.update(userDocRef, {'history': history});
+    }
   }
+
+  // Delete event from meetings collection
+  final meetingDocRef = FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
+  batch.delete(meetingDocRef);
+
+  await batch.commit();
 
   setState(() {
     isEnded = true;
   });
 
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => RatingPage(meeting: widget.meeting),
-    ),
-  );
+  Navigator.of(context).pop();
+  Navigator.of(context).pop();
 }
 
 
@@ -466,7 +466,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           backgroundColor: MaterialStateProperty.resolveWith<Color>(
             (Set<MaterialState> states) {
               if (joined) {
-                return Colors.red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
+                return Colors
+                    .red; // Zmiana koloru przycisku na czerwony, jeśli użytkownik jest uczestnikiem
               }
               return orange;
             },
@@ -474,7 +475,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           foregroundColor: MaterialStateProperty.all(white),
         ),
         child: Icon(joined ? Icons.remove : Icons.add,
-            color: white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
+            color:
+                white), // Zmiana ikony przycisku na "Usuń", jeśli użytkownik jest uczestnikiem
       ),
     );
   }
