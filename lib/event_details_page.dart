@@ -5,6 +5,7 @@ import 'package:meetoplay/edit_meet_page.dart';
 import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:meetoplay/home_page.dart';
 import 'package:meetoplay/main.dart';
 import 'package:meetoplay/map_page.dart';
 import 'package:meetoplay/participant_profile_page.dart';
@@ -108,11 +109,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     if (currentUser?.uid == widget.meeting.ownerId)
                       buildEndEventButton(),
                     const SizedBox(height: 5),
-                    buildEditButton(),
+                    if (currentUser?.uid == widget.meeting.ownerId)
+                      buildEditButton(),
                     const SizedBox(height: 5),
                     buildJoinButton(),
                     const SizedBox(height: 5),
-                    buildDrawTeamsButton(),
+                    if (currentUser?.uid == widget.meeting.ownerId)
+                      buildDrawTeamsButton(),
                     const SizedBox(height: 20),
                     buildTeamsDisplay(),
                     const SizedBox(height: 20),
@@ -249,52 +252,57 @@ Widget buildJoinButton() {
   }
 
   void endEvent() async {
-    final batch = FirebaseFirestore.instance.batch();
+  final batch = FirebaseFirestore.instance.batch();
 
-    // Add event to history for each participant
-    for (Participant participant in participants) {
-      final userDocRef =
-          FirebaseFirestore.instance.collection('users').doc(participant.userId);
-      final userDoc = await userDocRef.get();
+  // Add event to history for each participant
+  for (Participant participant in participants) {
+    final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(participant.userId);
+    final userDoc = await userDocRef.get();
 
-      if (userDoc.exists) {
-        final userData = userDoc.data() as Map<String, dynamic>;
-        final history = List.from(userData['history'] ?? []);
+    if (userDoc.exists) {
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final history = List.from(userData['history'] ?? []);
 
-        history.add({
-          'meetingId': widget.meeting.meetingId,
-          'name': widget.meeting.name,
-          'date': widget.meeting.date,
-          'time': widget.meeting.time,
-          'category': widget.meeting.category,
-          'skillLevel': widget.meeting.skillLevel,
-          'organizerName': widget.meeting.organizerName,
-          'organizerRating': widget.meeting.organizerRating,
-          'participants': widget.meeting.participants.map((p) => {
-                'name': p.name,
-                'userId': p.userId,
-              }).toList(),
-          'ratings': {} // Add an empty ratings field
-        });
+      history.add({
+        'meetingId': widget.meeting.meetingId,
+        'name': widget.meeting.name,
+        'date': widget.meeting.date,
+        'time': widget.meeting.time,
+        'category': widget.meeting.category,
+        'skillLevel': widget.meeting.skillLevel,
+        'organizerName': widget.meeting.organizerName,
+        'organizerRating': widget.meeting.organizerRating,
+        'participants': widget.meeting.participants.map((p) => {
+              'name': p.name,
+              'userId': p.userId,
+            }).toList(),
+        'ratings': {} // Add an empty ratings field
+      });
 
-        batch.update(userDocRef, {'history': history});
-      }
+      batch.update(userDocRef, {'history': history});
     }
-
-    // Delete event from meetings collection
-    final meetingDocRef =
-        FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
-    batch.delete(meetingDocRef);
-
-    await batch.commit();
-
-    setState(() {
-      isEnded = true;
-    });
-
-    Navigator.of(context).pop();
-    Navigator.of(context).pop();
   }
+
+  // Delete event from meetings collection
+  final meetingDocRef =
+      FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
+  batch.delete(meetingDocRef);
+
+  await batch.commit();
+
+  setState(() {
+    isEnded = true;
+  });
+
+  // Navigate to HomePage and remove all previous routes
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => const HomePage()),
+    (Route<dynamic> route) => false,
+  );
+}
+
 
   Widget buildMeetingDetails() {
     return Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
 
@@ -33,7 +34,7 @@ class ParticipantProfilePage extends StatelessWidget {
               const CircleAvatar(
                 radius: 50,
                 backgroundImage: null,
-                child: Icon(Icons.person, size: 50)
+                child: Icon(Icons.person, size: 50),
               ),
               const SizedBox(height: 20),
               Text(
@@ -58,34 +59,93 @@ class ParticipantProfilePage extends StatelessWidget {
               const SizedBox(height: 30),
               const Divider(thickness: 2),
               const Text(
-                'Event History',
+                'Historia wydarzeń',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
-              // Placeholder for event history
-              Container(
-                height: 200,
-                margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    'No event history available.',
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                ),
+              const SizedBox(height: 20),
+              FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(participant.userId)
+                    .get(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const Text(
+                      'Błąd wczytywania historii wydarzeń.',
+                      style: TextStyle(color: Colors.red),
+                    );
+                  }
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return const Text(
+                      'Brak historii wydarzeń.',
+                      style: TextStyle(color: Colors.black54),
+                    );
+                  }
+
+                  var userData = snapshot.data!.data() as Map<String, dynamic>;
+                  List<dynamic> history = userData['history'] ?? [];
+
+                  if (history.isEmpty) {
+                    return const Text(
+                      'Brak historii wydarzeń.',
+                      style: TextStyle(color: Colors.black54),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: history.length,
+                    itemBuilder: (context, index) {
+                      var event = history[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(color: darkBlue, width: 1),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16.0),
+                          title: Text(
+                            event['name'],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: darkBlue,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              Text(
+                                'Data: ${event['date']} ${event['time']}',
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Kategoria: ${event['category']}',
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                          trailing: const Icon(Icons.chevron_right, color: darkBlue),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),

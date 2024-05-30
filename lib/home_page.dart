@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'MEETOPLAY',
+          'Meetoplay',
         ),
         actions: [
           IconButton(
