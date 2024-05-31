@@ -79,7 +79,7 @@ class _RatingPageState extends State<RatingPage> {
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
         var rating = userData['rating'];
-        int ratingCounter = userData['ratingCounter'];
+        var ratingCounter = userData['ratingCounter'];
         rating = rating * ratingCounter;
         ratingCounter+=1;
         rating = rating + value;

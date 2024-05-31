@@ -464,7 +464,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 padding: const EdgeInsets.symmetric(vertical: 32.0),
                 child: Center(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         if (_selectedLocation.latitude == 0 &&
                             _selectedLocation.longitude == 0) {
@@ -477,6 +477,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           );
                           return;
                         }
+                        
+                        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUser?.uid)
+                      .get();
 
                         String meetingId =
                             DateTime.now().millisecondsSinceEpoch.toString();
@@ -486,7 +491,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         if (_isOrganizerParticipating) {
                           Participant newParticipant = Participant(
                             name: currentUser?.displayName ?? "Anonim",
-                            rating: 0,
+                            rating: userDoc['rating'].toDouble(),
                             userId: currentUser!.uid,
                           );
                           participants.add(newParticipant);
@@ -546,8 +551,8 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all(specialActionButtonColor),
-                      foregroundColor: MaterialStateProperty.all(white),
+                          WidgetStateProperty.all(specialActionButtonColor),
+                      foregroundColor: WidgetStateProperty.all(white),
                     ),
                     child: const Text('Dodaj spotkanie'),
                   ),

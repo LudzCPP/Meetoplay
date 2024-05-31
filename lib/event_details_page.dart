@@ -128,86 +128,89 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   Widget buildDrawTeamsButton() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: ElevatedButton(
-      onPressed: drawTeams,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: darkBlue,
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: const Text('Wylosuj składy', style: TextStyle(fontSize: 16, color: white)),
-    ),
-  );
-}
-
-Widget buildEndEventButton() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: ElevatedButton(
-      onPressed: () => endEvent(),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: darkBlue,
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-      child: const Text('Zakończ wydarzenie', style: TextStyle(fontSize: 16, color: white)),
-    ),
-  );
-}
-
-Widget buildEditButton() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditMeetPage(meeting: widget.meeting),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: drawTeams,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkBlue,
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
           ),
-        );
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: darkBlue,
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
         ),
+        child: const Text('Wylosuj składy',
+            style: TextStyle(fontSize: 16, color: white)),
       ),
-      child: const Text('Edytuj spotkanie', style: TextStyle(fontSize: 16, color: white)),
-    ),
-  );
-}
+    );
+  }
 
-Widget buildJoinButton() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: ElevatedButton(
-      onPressed: () {
-        if (joined) {
-          showLeaveDialog();
-        } else {
-          showJoinDialog();
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: joined ? darkBlue : darkBlue,
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+  Widget buildEndEventButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: () => endEvent(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkBlue,
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
+        child: const Text('Zakończ wydarzenie',
+            style: TextStyle(fontSize: 16, color: white)),
       ),
-      child: Text(joined ? 'Opuść' : 'Dołącz',
-          style: const TextStyle(fontSize: 16, color: white)),
-    ),
-  );
-}
+    );
+  }
+
+  Widget buildEditButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EditMeetPage(meeting: widget.meeting),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkBlue,
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: const Text('Edytuj spotkanie',
+            style: TextStyle(fontSize: 16, color: white)),
+      ),
+    );
+  }
+
+  Widget buildJoinButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          if (joined) {
+            showLeaveDialog();
+          } else {
+            showJoinDialog();
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: joined ? darkBlue : darkBlue,
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Text(joined ? 'Opuść' : 'Dołącz',
+            style: const TextStyle(fontSize: 16, color: white)),
+      ),
+    );
+  }
 
   Widget buildTeamsDisplay() {
     return isLoading
@@ -252,57 +255,60 @@ Widget buildJoinButton() {
   }
 
   void endEvent() async {
-  final batch = FirebaseFirestore.instance.batch();
+    final batch = FirebaseFirestore.instance.batch();
 
-  // Add event to history for each participant
-  for (Participant participant in participants) {
-    final userDocRef =
-        FirebaseFirestore.instance.collection('users').doc(participant.userId);
-    final userDoc = await userDocRef.get();
+    // Add event to history for each participant
+    for (Participant participant in participants) {
+      final userDocRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(participant.userId);
+      final userDoc = await userDocRef.get();
 
-    if (userDoc.exists) {
-      final userData = userDoc.data() as Map<String, dynamic>;
-      final history = List.from(userData['history'] ?? []);
+      if (userDoc.exists) {
+        final userData = userDoc.data() as Map<String, dynamic>;
+        final history = List.from(userData['history'] ?? []);
 
-      history.add({
-        'meetingId': widget.meeting.meetingId,
-        'name': widget.meeting.name,
-        'date': widget.meeting.date,
-        'time': widget.meeting.time,
-        'category': widget.meeting.category,
-        'skillLevel': widget.meeting.skillLevel,
-        'organizerName': widget.meeting.organizerName,
-        'organizerRating': widget.meeting.organizerRating,
-        'participants': widget.meeting.participants.map((p) => {
-              'name': p.name,
-              'userId': p.userId,
-            }).toList(),
-        'ratings': {} // Add an empty ratings field
-      });
+        history.add({
+          'meetingId': widget.meeting.meetingId,
+          'name': widget.meeting.name,
+          'date': widget.meeting.date,
+          'time': widget.meeting.time,
+          'category': widget.meeting.category,
+          'skillLevel': widget.meeting.skillLevel,
+          'organizerName': widget.meeting.organizerName,
+          'organizerRating': widget.meeting.organizerRating,
+          'participants': widget.meeting.participants
+              .map((p) => {
+                    'name': p.name,
+                    'userId': p.userId,
+                  })
+              .toList(),
+          'ratings': {} // Add an empty ratings field
+        });
 
-      batch.update(userDocRef, {'history': history});
+        batch.update(userDocRef, {'history': history});
+      }
     }
+
+    // Delete event from meetings collection
+    final meetingDocRef = FirebaseFirestore.instance
+        .collection('meetings')
+        .doc(widget.meeting.meetingId);
+    batch.delete(meetingDocRef);
+
+    await batch.commit();
+
+    setState(() {
+      isEnded = true;
+    });
+
+    // Navigate to HomePage and remove all previous routes
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+      (Route<dynamic> route) => false,
+    );
   }
-
-  // Delete event from meetings collection
-  final meetingDocRef =
-      FirebaseFirestore.instance.collection('meetings').doc(widget.meeting.meetingId);
-  batch.delete(meetingDocRef);
-
-  await batch.commit();
-
-  setState(() {
-    isEnded = true;
-  });
-
-  // Navigate to HomePage and remove all previous routes
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(builder: (context) => const HomePage()),
-    (Route<dynamic> route) => false,
-  );
-}
-
 
   Widget buildMeetingDetails() {
     return Column(
@@ -570,7 +576,6 @@ Widget buildJoinButton() {
                 if (mounted) {
                   navigatorKey.currentState?.pop();
                   navigatorKey.currentState?.pop();
-                  navigatorKey.currentState?.pop();
                 }
               },
               child: const Text("Opuść"),
@@ -622,10 +627,14 @@ Widget buildJoinButton() {
 
                 try {
                   User? currentUser = FirebaseAuth.instance.currentUser;
+                  DocumentSnapshot userDoc = await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(currentUser?.uid)
+                      .get();
                   if (currentUser != null) {
                     Participant newParticipant = Participant(
                       name: currentUser.displayName ?? "Anonim",
-                      rating: 0,
+                      rating: userDoc['rating'].toDouble() ?? 0.0,
                       userId: currentUser.uid,
                     );
                     await DatabaseService(uid: currentUser.uid)
@@ -654,7 +663,6 @@ Widget buildJoinButton() {
                 }
 
                 if (mounted) {
-                  navigatorKey.currentState?.pop();
                   navigatorKey.currentState?.pop();
                   navigatorKey.currentState?.pop();
                 }
