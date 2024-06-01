@@ -29,6 +29,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'last_name': '',
         'city': '',
         'birthdate': null,
+        'rating': 0,
+        'ratingCounter': 0,
         'role': 'User',
         'banned': false,
         'history': [],
@@ -36,6 +38,19 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     } catch (e) {
       Fluttertoast.showToast(
           msg: "Błąd podczas dodawania użytkownika do Firestore: $e");
+    }
+  }
+
+  Future<void> _addGuestToFirestore(User user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        'role': 'Guest',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      Fluttertoast.showToast(msg: "Zalogowano jako gość: ${user.uid}");
+    } catch (e) {
+      Fluttertoast.showToast(msg: "Błąd podczas logowania jako gość: $e");
     }
   }
 
@@ -66,25 +81,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     }
   }
 
-  Future<void> _registerWithEmail() async {
-    try {
-      final UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-      await _addUserToFirestore(userCredential.user!);
-      Fluttertoast.showToast(
-          msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
-    } catch (e) {
-      Fluttertoast.showToast(msg: "Błąd rejestracji: $e");
-    }
-  }
-
   Future<void> _signInAnonymously() async {
     try {
       final UserCredential userCredential = await _auth.signInAnonymously();
-      await _addUserToFirestore(userCredential.user!);
+      await _addGuestToFirestore(userCredential.user!);
       Fluttertoast.showToast(
           msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
     } catch (e) {

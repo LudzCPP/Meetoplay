@@ -41,6 +41,15 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     updateParticipantsList();
   }
 
+  Future<String> getCurrentUserRole() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser?.uid)
+        .get();
+    return userDoc['role'];
+  }
+
   void updateParticipantsList() async {
     DocumentSnapshot meetingDoc = await FirebaseFirestore.instance
         .collection('meetings')
@@ -87,43 +96,67 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   Widget build(BuildContext context) {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.meeting.name, style: const TextStyle(color: white)),
-        backgroundColor: darkBlue,
-      ),
-      body: isEnded
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    buildMeetingDetails(),
-                    const SizedBox(height: 20),
-                    buildParticipantsList(),
-                    const SizedBox(height: 20),
-                    buildWaitingList(),
-                    const SizedBox(height: 20),
-                    if (currentUser?.uid == widget.meeting.ownerId)
-                      buildEndEventButton(),
-                    const SizedBox(height: 5),
-                    if (currentUser?.uid == widget.meeting.ownerId)
-                      buildEditButton(),
-                    const SizedBox(height: 5),
-                    buildJoinButton(),
-                    const SizedBox(height: 5),
-                    if (currentUser?.uid == widget.meeting.ownerId)
-                      buildDrawTeamsButton(),
-                    const SizedBox(height: 20),
-                    buildTeamsDisplay(),
-                    const SizedBox(height: 20),
-                    buildChatSection(widget.meeting.meetingId),
-                  ],
-                ),
-              ),
+    return FutureBuilder<String>(
+      future: getCurrentUserRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Błąd: ${snapshot.error}'));
+        } else if (!snapshot.hasData) {
+          return const Center(
+              child: Text('Nie można pobrać roli użytkownika.'));
+        } else {
+          String userRole = snapshot.data!;
+          bool isGuest = userRole == 'Guest';
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.meeting.name,
+                  style: const TextStyle(color: white)),
+              backgroundColor: darkBlue,
             ),
+            body: isEnded
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          buildMeetingDetails(),
+                          const SizedBox(height: 20),
+                          buildParticipantsList(),
+                          const SizedBox(height: 20),
+                          buildWaitingList(),
+                          const SizedBox(height: 20),
+                          if (!isGuest) buildEventButtons(currentUser),
+                          const SizedBox(height: 20),
+                          buildTeamsDisplay(),
+                          const SizedBox(height: 20),
+                          if (!isGuest)
+                            buildChatSection(widget.meeting.meetingId),
+                        ],
+                      ),
+                    ),
+                  ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget buildEventButtons(User? currentUser) {
+    return Column(
+      children: [
+        if (currentUser?.uid == widget.meeting.ownerId) buildEndEventButton(),
+        const SizedBox(height: 5),
+        if (currentUser?.uid == widget.meeting.ownerId) buildEditButton(),
+        const SizedBox(height: 5),
+        buildJoinButton(),
+        const SizedBox(height: 5),
+        if (currentUser?.uid == widget.meeting.ownerId) buildDrawTeamsButton(),
+      ],
     );
   }
 

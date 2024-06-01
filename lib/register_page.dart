@@ -53,8 +53,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'rating': 0,
           'ratingCounter': 0,
           'role': 'User',
-          'banned': false, // Domyślnie użytkownik nie jest zbanowany
-          'history': [], // Inicjalizacja pustej historii spotkań
+          'banned': false,
+          'history': [],
         });
 
         Fluttertoast.showToast(

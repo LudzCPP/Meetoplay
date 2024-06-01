@@ -511,7 +511,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           0,
                           FirebaseAuth.instance.currentUser!.displayName ??
                               "Organizer",
-                          4.5, // Example rating
+                          userDoc['rating'].toDouble(), // Example rating
                           _isOrganizerParticipating ? participants : [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );

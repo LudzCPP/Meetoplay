@@ -6,6 +6,7 @@ import 'package:meetoplay/event_bus.dart';
 import 'package:meetoplay/global_variables.dart';
 import 'package:meetoplay/create_meet_page.dart';
 import 'package:meetoplay/models/meetings.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -24,70 +25,100 @@ class _MapPageState extends State<MapPage> {
     _registerNotification();
   }
 
+  Future<String> getCurrentUserRole() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser?.uid)
+        .get();
+    return userDoc['role'];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('MAPA'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterDialog(),
-          ),
-        ],
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [darkBlue, lightBlue],
-              begin: Alignment.bottomRight,
-              end: Alignment.topLeft,
-            ),
-          ),
-        ),
-      ),
-      body: Center(
-        child: FlutterMap(
-          mapController: mapController,
-          options: MapOptions(
-            interactionOptions: const InteractionOptions(
-              flags: InteractiveFlag.pinchZoom |
-                  InteractiveFlag.drag |
-                  InteractiveFlag.pinchMove,
-            ),
-            cameraConstraint: CameraConstraint.contain(
-              bounds: LatLngBounds(
-                const LatLng(49.002, 14.122), // SW point of Poland
-                const LatLng(54.838, 24.145), // NE point of Poland
+    return FutureBuilder<String>(
+      future: getCurrentUserRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Błąd: ${snapshot.error}'));
+        } else if (!snapshot.hasData) {
+          return const Center(
+              child: Text('Nie można pobrać roli użytkownika.'));
+        } else {
+          String userRole = snapshot.data!;
+          bool isGuest = userRole == 'Guest';
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('MAPA'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: () => _showFilterDialog(),
+                ),
+              ],
+              flexibleSpace: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [darkBlue, lightBlue],
+                    begin: Alignment.bottomRight,
+                    end: Alignment.topLeft,
+                  ),
+                ),
               ),
             ),
-            minZoom: 7,
-            maxZoom: 20,
-            initialCenter: const LatLng(51.759247, 19.455982),
-            initialZoom: 13.2,
-          ),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.app',
+            body: Center(
+              child: FlutterMap(
+                mapController: mapController,
+                options: MapOptions(
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.pinchZoom |
+                        InteractiveFlag.drag |
+                        InteractiveFlag.pinchMove,
+                  ),
+                  cameraConstraint: CameraConstraint.contain(
+                    bounds: LatLngBounds(
+                      const LatLng(49.002, 14.122), // SW point of Poland
+                      const LatLng(54.838, 24.145), // NE point of Poland
+                    ),
+                  ),
+                  minZoom: 7,
+                  maxZoom: 20,
+                  initialCenter: const LatLng(51.759247, 19.455982),
+                  initialZoom: 13.2,
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.app',
+                  ),
+                  MarkerLayer(
+                    markers: _filteredMarkers(),
+                  ),
+                ],
+              ),
             ),
-            MarkerLayer(
-              markers: _filteredMarkers(),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const CreateMeetPage(),
-            ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: isGuest
+                ? null
+                : FloatingActionButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreateMeetPage(),
+                        ),
+                      );
+                    },
+                    backgroundColor: pink,
+                    child: const Icon(Icons.add),
+                  ),
           );
-        },
-        backgroundColor: pink,
-        child: const Icon(Icons.add),
-      ),
+        }
+      },
     );
   }
 

@@ -27,7 +27,10 @@ class UserList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: _firestore.collection('users').snapshots(),
+      stream: _firestore
+          .collection('users')
+          .where('role', isNotEqualTo: 'Guest')
+          .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Something went wrong'));
@@ -40,19 +43,23 @@ class UserList extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(8.0),
           children: snapshot.data!.docs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
+            Map<String, dynamic> data =
+                document.data()! as Map<String, dynamic>;
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
               child: ListTile(
+                isThreeLine: true,
                 contentPadding: const EdgeInsets.all(16.0),
                 title: Text(
                   data['nickname'],
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Email: ${data['email']}'),
+                    Text('Email: ${data['email']}',
+                        overflow: TextOverflow.ellipsis),
                     Text('Role: ${data['role']}'),
                     Text('Status: ${data['banned'] ? "Banned" : "Active"}'),
                   ],
@@ -63,11 +70,13 @@ class UserList extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.blueAccent),
                       onPressed: () {
-                        _editUser(context, document.id, data['nickname'], data['email'], data['role'], data['banned']);
+                        _editUser(context, document.id, data['nickname'],
+                            data['email'], data['role'], data['banned']);
                       },
                     ),
                     IconButton(
-                      icon: Icon(data['banned'] ? Icons.lock_open : Icons.lock, color: Colors.redAccent),
+                      icon: Icon(data['banned'] ? Icons.lock_open : Icons.lock,
+                          color: Colors.redAccent),
                       onPressed: () {
                         _toggleBanUser(context, document.id, data['banned']);
                       },
@@ -82,9 +91,12 @@ class UserList extends StatelessWidget {
     );
   }
 
-  Future<void> _editUser(BuildContext context, String userId, String nickname, String email, String role, bool banned) async {
-    final TextEditingController nicknameController = TextEditingController(text: nickname);
-    final TextEditingController emailController = TextEditingController(text: email);
+  Future<void> _editUser(BuildContext context, String userId, String nickname,
+      String email, String role, bool banned) async {
+    final TextEditingController nicknameController =
+        TextEditingController(text: nickname);
+    final TextEditingController emailController =
+        TextEditingController(text: email);
     String selectedRole = role;
 
     showDialog(
@@ -128,13 +140,15 @@ class UserList extends StatelessWidget {
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Save', style: TextStyle(color: Colors.blueAccent)),
+              child: const Text('Save',
+                  style: TextStyle(color: Colors.blueAccent)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel', style: TextStyle(color: Colors.redAccent)),
+              child: const Text('Cancel',
+                  style: TextStyle(color: Colors.redAccent)),
             ),
           ],
         );
@@ -142,7 +156,8 @@ class UserList extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleBanUser(BuildContext context, String userId, bool isBanned) async {
+  Future<void> _toggleBanUser(
+      BuildContext context, String userId, bool isBanned) async {
     try {
       await _firestore.collection('users').doc(userId).update({
         'banned': !isBanned,
