@@ -12,7 +12,7 @@ class EventManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Event Management'),
+        title: const Text('Wydarzenia'),
         backgroundColor: Colors.blueAccent,
       ),
       body: EventList(),
@@ -31,7 +31,7 @@ class EventList extends StatelessWidget {
       stream: _firestore.collection('meetings').snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text('Something went wrong'));
+          return const Center(child: Text('Coś poszło nie tak'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -54,12 +54,11 @@ class EventList extends StatelessWidget {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Date: ${data['date']}'),
-                    Text('Time: ${data['time']}'),
-                    Text('Category: ${data['category']}'),
-                    Text('Skill Level: ${data['skillLevel']}'),
-                    Text('Participants: ${data['registeredCount']} / ${data['maxParticipants']}'),
-                    Text('Status: ${data['status']}'),
+                    Text('Data: ${data['date']}'),
+                    Text('Czas: ${data['time']}'),
+                    Text('Sport: ${data['category']}'),
+                    Text('Poziom zaawansowania: ${data['skillLevel']}'),
+                    Text('Uczestnicy: ${data['participants'].length} / ${data['maxParticipants']}'),
                   ],
                 ),
                 trailing: Row(
@@ -93,39 +92,34 @@ class EventList extends StatelessWidget {
     final TextEditingController timeController = TextEditingController(text: eventData['time']);
     final TextEditingController categoryController = TextEditingController(text: eventData['category']);
     final TextEditingController skillLevelController = TextEditingController(text: eventData['skillLevel']);
-    final TextEditingController statusController = TextEditingController(text: eventData['status']);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit Event'),
+          title: const Text('Edytuj wydarzenie'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Event Name'),
+                decoration: const InputDecoration(labelText: 'Nazwa wydarzenia'),
               ),
               TextField(
                 controller: dateController,
-                decoration: const InputDecoration(labelText: 'Date'),
+                decoration: const InputDecoration(labelText: 'Data'),
               ),
               TextField(
                 controller: timeController,
-                decoration: const InputDecoration(labelText: 'Time'),
+                decoration: const InputDecoration(labelText: 'Czas'),
               ),
               TextField(
                 controller: categoryController,
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: const InputDecoration(labelText: 'Sport'),
               ),
               TextField(
                 controller: skillLevelController,
-                decoration: const InputDecoration(labelText: 'Skill Level'),
-              ),
-              TextField(
-                controller: statusController,
-                decoration: const InputDecoration(labelText: 'Status'),
+                decoration: const InputDecoration(labelText: 'Poziom zaawansowania'),
               ),
             ],
           ),
@@ -138,17 +132,16 @@ class EventList extends StatelessWidget {
                   'time': timeController.text,
                   'category': categoryController.text,
                   'skillLevel': skillLevelController.text,
-                  'status': statusController.text,
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Save', style: TextStyle(color: Colors.blueAccent)),
+              child: const Text('Zapisz', style: TextStyle(color: Colors.blueAccent)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel', style: TextStyle(color: Colors.redAccent)),
+              child: const Text('Anuluj', style: TextStyle(color: Colors.redAccent)),
             ),
           ],
         );

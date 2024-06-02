@@ -48,7 +48,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'role': 'Guest',
         'createdAt': FieldValue.serverTimestamp(),
       });
-      Fluttertoast.showToast(msg: "Zalogowano jako gość: ${user.uid}");
+      //Fluttertoast.showToast(msg: "Zalogowano jako gość: ${user.uid}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd podczas logowania jako gość: $e");
     }
@@ -85,8 +85,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     try {
       final UserCredential userCredential = await _auth.signInAnonymously();
       await _addGuestToFirestore(userCredential.user!);
-      Fluttertoast.showToast(
-          msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
+      Fluttertoast.showToast(msg: "Zalogowano anonimowo.");
+      //msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania anonimowego: $e");
     }
@@ -94,10 +94,19 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
+      await _googleSignIn.signOut();
+
+      // Now start the sign-in process
       final GoogleSignInAccount? googleSignInAccount =
           await _googleSignIn.signIn();
+      if (googleSignInAccount == null) {
+        Fluttertoast.showToast(
+            msg: "Logowanie przez Google zostało anulowane.");
+        return;
+      }
+
       final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount!.authentication;
+          await googleSignInAccount.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
         idToken: googleSignInAuthentication.idToken,
@@ -110,7 +119,17 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         Fluttertoast.showToast(
             msg: "Twoje konto zostało zablokowane i nie możesz się zalogować.");
       } else {
-        await _addUserToFirestore(userCredential.user!);
+        // Check if user already exists in Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        if (!userDoc.exists) {
+          // Add user to Firestore only if the user does not exist
+          await _addUserToFirestore(userCredential.user!);
+        }
+
         Fluttertoast.showToast(
             msg: "Zalogowano przez Google: ${userCredential.user!.email}");
       }
@@ -128,102 +147,118 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: lightBlue,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-                offset: Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            children: <Widget>[
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: const TextStyle(color: white),
-                  filled: true,
-                  fillColor: darkBlue,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+        child: Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: lightBlue,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Hasło',
-                  labelStyle: const TextStyle(color: white),
-                  filled: true,
-                  fillColor: darkBlue,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Hasło',
+                    labelStyle: const TextStyle(color: white),
+                    filled: true,
+                    fillColor: darkBlue,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: _signInWithEmail,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: specialActionButtonColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _signInWithEmail,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: specialActionButtonColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Zaloguj przez email'),
                 ),
-                child: const Text('Zaloguj przez email'),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _signInAnonymously,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: orange,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _signInAnonymously,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: orange,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Kontynuuj bez logowania'),
                 ),
-                child: const Text('Kontynuuj bez logowania'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: pink,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: pink,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Rejestracja przez email'),
                 ),
-                child: const Text('Rejestracja przez email'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _signInWithGoogle,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: darkBlue,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  textStyle: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _signInWithGoogle,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: darkBlue,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    textStyle: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text('Zaloguj przez Google'),
                 ),
-                child: const Text('Zaloguj przez Google'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -507,7 +507,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           _selectedSport.toString(),
                           _selectedLevel.toString(),
                           _selectedMaxParticipants!.toInt(),
-                          participants.length,
                           0,
                           FirebaseAuth.instance.currentUser!.displayName ??
                               "Organizer",

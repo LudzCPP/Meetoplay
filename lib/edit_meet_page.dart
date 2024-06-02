@@ -486,7 +486,6 @@ class _EditMeetPageState extends State<EditMeetPage> {
                           _selectedLevel.toString(),
                           _selectedMaxParticipants!.toInt(),
                           0,
-                          0,
                           FirebaseAuth.instance.currentUser!.displayName ??
                               "Organizer",
                           4.5, // Example rating
@@ -505,8 +504,8 @@ class _EditMeetPageState extends State<EditMeetPage> {
                     },
                     style: ButtonStyle(
                       backgroundColor:
-                          MaterialStateProperty.all(specialActionButtonColor),
-                      foregroundColor: MaterialStateProperty.all(white),
+                          WidgetStateProperty.all(specialActionButtonColor),
+                      foregroundColor: WidgetStateProperty.all(white),
                     ),
                     child: const Text('Zaktualizuj spotkanie'),
                   ),

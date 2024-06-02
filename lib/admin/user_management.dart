@@ -10,7 +10,7 @@ class UserManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Management'),
+        title: const Text('Użytkownicy'),
         backgroundColor: Colors.blueAccent,
       ),
       body: UserList(),
@@ -33,7 +33,7 @@ class UserList extends StatelessWidget {
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return const Center(child: Text('Something went wrong'));
+          return const Center(child: Text('Coś poszło nie tak.'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -60,8 +60,8 @@ class UserList extends StatelessWidget {
                   children: [
                     Text('Email: ${data['email']}',
                         overflow: TextOverflow.ellipsis),
-                    Text('Role: ${data['role']}'),
-                    Text('Status: ${data['banned'] ? "Banned" : "Active"}'),
+                    Text('Rola: ${data['role']}'),
+                    Text('Status: ${data['banned'] ? "Zablokowany" : "Aktywny"}'),
                   ],
                 ),
                 trailing: Row(
@@ -103,13 +103,13 @@ class UserList extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Edit User'),
+          title: const Text('Edytuj użytkownika'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nicknameController,
-                decoration: const InputDecoration(labelText: 'Nickname'),
+                decoration: const InputDecoration(labelText: 'Nazwa'),
               ),
               TextField(
                 controller: emailController,
@@ -117,7 +117,7 @@ class UserList extends StatelessWidget {
               ),
               DropdownButtonFormField<String>(
                 value: selectedRole,
-                decoration: const InputDecoration(labelText: 'Role'),
+                decoration: const InputDecoration(labelText: 'Rola'),
                 items: ['User', 'Admin'].map((String role) {
                   return DropdownMenuItem<String>(
                     value: role,
@@ -140,14 +140,14 @@ class UserList extends StatelessWidget {
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Save',
+              child: const Text('Zapisz',
                   style: TextStyle(color: Colors.blueAccent)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel',
+              child: const Text('Anuluj',
                   style: TextStyle(color: Colors.redAccent)),
             ),
           ],
@@ -162,9 +162,9 @@ class UserList extends StatelessWidget {
       await _firestore.collection('users').doc(userId).update({
         'banned': !isBanned,
       });
-      Fluttertoast.showToast(msg: isBanned ? "User unbanned." : "User banned.");
+      Fluttertoast.showToast(msg: isBanned ? "Użytkownik odblokowany." : "Użytkownik zablokowany.");
     } catch (e) {
-      Fluttertoast.showToast(msg: "Error updating user status: $e");
+      Fluttertoast.showToast(msg: "Błąd: $e");
     }
   }
 }

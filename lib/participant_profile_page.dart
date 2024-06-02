@@ -12,7 +12,7 @@ class ParticipantProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PROFILE'),
+        title: const Text('PROFIL'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -47,13 +47,8 @@ class ParticipantProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               ListTile(
-                leading: const Icon(Icons.person, color: darkBlue),
-                title: const Text('User ID', style: TextStyle(color: Colors.black)),
-                subtitle: Text(participant.userId, style: const TextStyle(color: white)),
-              ),
-              ListTile(
                 leading: const Icon(Icons.star, color: darkBlue),
-                title: const Text('Rating', style: TextStyle(color: Colors.black)),
+                title: const Text('Ocena', style: TextStyle(color: Colors.black)),
                 subtitle: Text(participant.rating.toString(), style: const TextStyle(color: white)),
               ),
               const SizedBox(height: 30),

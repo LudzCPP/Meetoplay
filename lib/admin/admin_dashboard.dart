@@ -14,14 +14,14 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text('Panel administratora'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             AdminSection(
-              title: 'User Management',
+              title: 'Użytkownicy',
               icon: Icons.people,
               onTap: () {
                 Navigator.push(
@@ -32,7 +32,7 @@ class AdminDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 16.0),
             AdminSection(
-              title: 'Event Management',
+              title: 'Wydarzenia',
               icon: Icons.event,
               onTap: () {
                 Navigator.push(
@@ -43,23 +43,12 @@ class AdminDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 16.0),
             AdminSection(
-              title: 'Categories Management',
+              title: 'Kategorie sportu',
               icon: Icons.category,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const CategoriesManagementScreen()),
-                );
-              },
-            ),
-            const SizedBox(height: 16.0),
-            AdminSection(
-              title: 'Statistics & Reports',
-              icon: Icons.bar_chart,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const StatisticsReportsScreen()),
                 );
               },
             ),

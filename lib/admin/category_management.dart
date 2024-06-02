@@ -10,7 +10,7 @@ class CategoriesManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categories Management'),
+        title: const Text('Kategorie sportu'),
         backgroundColor: Colors.blueAccent,
       ),
       body: const CategoriesList(),

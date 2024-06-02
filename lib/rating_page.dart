@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +23,8 @@ class _RatingPageState extends State<RatingPage> {
       throw Exception('User not found');
     }
 
-    final userDocRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userDocRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
     final userDoc = await userDocRef.get();
     if (!userDoc.exists) {
       throw Exception('User document not found');
@@ -70,23 +69,25 @@ class _RatingPageState extends State<RatingPage> {
       await userDocRef.update({'history': history});
     }
   }
-  Future<void> _updateNewRatings() async {
 
+  Future<void> _updateNewRatings() async {
     newRatings.forEach((key, value) async {
       final userDocRef =
-        FirebaseFirestore.instance.collection('users').doc(key);
+          FirebaseFirestore.instance.collection('users').doc(key);
       final userDoc = await userDocRef.get();
       if (userDoc.exists) {
         final userData = userDoc.data() as Map<String, dynamic>;
         var rating = userData['rating'];
         var ratingCounter = userData['ratingCounter'];
         rating = rating * ratingCounter;
-        ratingCounter+=1;
+        ratingCounter += 1;
         rating = rating + value;
         rating = rating / ratingCounter;
 
-        await userDocRef.update({'rating': rating,
-        'ratingCounter': ratingCounter});
+        await userDocRef.update({
+          'rating': rating,
+          'ratingCounter': ratingCounter,
+        });
       }
     });
   }
@@ -109,8 +110,11 @@ class _RatingPageState extends State<RatingPage> {
             return const Center(child: Text('Event not found'));
           } else {
             final eventData = snapshot.data!;
-            final participants = eventData['participants'] as List<dynamic>? ?? [];
-            final existingRatings = eventData['ratings'] as Map<String, dynamic>? ?? {};
+            final participants =
+                eventData['participants'] as List<dynamic>? ?? [];
+            final existingRatings =
+                eventData['ratings'] as Map<String, dynamic>? ?? {};
+            final currentUser = FirebaseAuth.instance.currentUser;
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -122,7 +126,10 @@ class _RatingPageState extends State<RatingPage> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-                  ...participants.map<Widget>(
+                  ...participants
+                      .where((participant) =>
+                          participant['userId'] != currentUser!.uid)
+                      .map<Widget>(
                     (participant) {
                       final userId = participant['userId'];
                       final alreadyRated = existingRatings.containsKey(userId);
@@ -162,8 +169,8 @@ class _RatingPageState extends State<RatingPage> {
                                   direction: Axis.horizontal,
                                   allowHalfRating: false,
                                   itemCount: 5,
-                                  itemPadding:
-                                      const EdgeInsets.symmetric(horizontal: 4.0),
+                                  itemPadding: const EdgeInsets.symmetric(
+                                      horizontal: 4.0),
                                   itemBuilder: (context, _) => const Icon(
                                     Icons.star,
                                     color: Colors.amber,
@@ -191,8 +198,8 @@ class _RatingPageState extends State<RatingPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: specialActionButtonColor,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 15),
                         textStyle: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),

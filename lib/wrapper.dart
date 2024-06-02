@@ -74,7 +74,6 @@ class AuthWrapper extends StatelessWidget {
                         category: data['category'],
                         skillLevel: data['skillLevel'],
                         maxParticipants: data['maxParticipants'],
-                        registeredCount: data['registeredCount'],
                         waitListCount: data['waitListCount'],
                         organizerName: data['organizerName'],
                         organizerRating: data['organizerRating'],

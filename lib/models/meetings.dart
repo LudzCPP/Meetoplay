@@ -10,7 +10,6 @@ class Meeting {
   String category;
   String skillLevel;
   int maxParticipants;
-  int registeredCount;
   int waitListCount;
   String organizerName;
   double organizerRating;
@@ -27,7 +26,6 @@ class Meeting {
     required this.category,
     required this.skillLevel,
     required this.maxParticipants,
-    required this.registeredCount,
     required this.waitListCount,
     required this.organizerName,
     required this.organizerRating,

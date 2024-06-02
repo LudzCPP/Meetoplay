@@ -149,8 +149,8 @@ class _FindMeetPageState extends State<FindMeetPage> {
               onPressed: searchMeetings,
               style: ButtonStyle(
                 backgroundColor:
-                    MaterialStateProperty.all(specialActionButtonColor),
-                foregroundColor: MaterialStateProperty.all(Colors.white),
+                    WidgetStateProperty.all(specialActionButtonColor),
+                foregroundColor: WidgetStateProperty.all(Colors.white),
               ),
               child: const Text('Szukaj'),
             ),
@@ -237,7 +237,7 @@ class _FindMeetPageState extends State<FindMeetPage> {
       bool matchesLevel =
           _selectedLevel == null || meeting.skillLevel == _selectedLevel;
       bool matchesFreeSpots = !_areFreeSpotsAvailable ||
-          (meeting.maxParticipants > meeting.registeredCount);
+          (meeting.maxParticipants > meeting.participants.length);
       bool matchesDate = _selectedDate == null ||
           meeting.date ==
               "${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}";

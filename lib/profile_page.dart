@@ -20,6 +20,15 @@ class ProfilePage extends StatelessWidget {
     return userDoc['role'];
   }
 
+  Future<double> getUserRating() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser?.uid)
+        .get();
+    return userDoc['rating'].toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -103,7 +112,7 @@ class ProfilePage extends StatelessWidget {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            user.displayName ?? 'Nie podano',
+                            user.displayName ?? 'Brak',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -111,25 +120,57 @@ class ProfilePage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          ListTile(
-                            leading: const Icon(Icons.email, color: darkBlue),
-                            title: const Text('Email',
-                                style: TextStyle(color: Colors.black)),
-                            subtitle: Text(user.email ?? 'Nie podano',
-                                style: const TextStyle(color: white)),
-                          ),
-                          ListTile(
-                            leading: const Icon(Icons.calendar_today,
-                                color: darkBlue),
-                            title: const Text('Data założenia konta',
-                                style: TextStyle(color: Colors.black)),
-                            subtitle: Text(
-                                user.metadata.creationTime
-                                        ?.toString()
-                                        .split('.')[0] ??
-                                    'Nieznana',
-                                style: const TextStyle(color: white)),
-                          ),
+                          if (!isGuest)
+                            FutureBuilder<double>(
+                              future: getUserRating(),
+                              builder: (context, ratingSnapshot) {
+                                if (ratingSnapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (ratingSnapshot.hasError) {
+                                  return const Text(
+                                    'Błąd wczytywania oceny.',
+                                    style: TextStyle(color: Colors.red),
+                                  );
+                                } else if (!ratingSnapshot.hasData) {
+                                  return const Text(
+                                    'Nie można pobrać oceny.',
+                                    style: TextStyle(color: Colors.black54),
+                                  );
+                                } else {
+                                  return ListTile(
+                                    leading:
+                                        const Icon(Icons.star, color: darkBlue),
+                                    title: const Text('Ocena',
+                                        style: TextStyle(color: Colors.black)),
+                                    subtitle: Text(
+                                        ratingSnapshot.data!.toStringAsFixed(1),
+                                        style: const TextStyle(color: white)),
+                                  );
+                                }
+                              },
+                            ),
+                          if (!isGuest)
+                            ListTile(
+                              leading: const Icon(Icons.email, color: darkBlue),
+                              title: const Text('Email',
+                                  style: TextStyle(color: Colors.black)),
+                              subtitle: Text(user.email ?? 'Nie podano',
+                                  style: const TextStyle(color: white)),
+                            ),
+                          if (!isGuest)
+                            ListTile(
+                              leading: const Icon(Icons.calendar_today,
+                                  color: darkBlue),
+                              title: const Text('Data założenia konta',
+                                  style: TextStyle(color: Colors.black)),
+                              subtitle: Text(
+                                  user.metadata.creationTime
+                                          ?.toString()
+                                          .split('.')[0] ??
+                                      'Nieznana',
+                                  style: const TextStyle(color: white)),
+                            ),
                           const SizedBox(height: 30),
                           ElevatedButton.icon(
                             onPressed: () async {
@@ -215,7 +256,7 @@ class ProfilePage extends StatelessWidget {
                                 if (!snapshot.hasData ||
                                     !snapshot.data!.exists) {
                                   return const Text(
-                                    'Brak historii wydarzeń.',
+                                    'Brak wydarzeń.',
                                     style: TextStyle(color: Colors.black54),
                                   );
                                 }
@@ -227,7 +268,7 @@ class ProfilePage extends StatelessWidget {
 
                                 if (history.isEmpty) {
                                   return const Text(
-                                    'Brak historii wydarzeń.',
+                                    'Brak wydarzeń.',
                                     style: TextStyle(color: Colors.black54),
                                   );
                                 }

@@ -731,17 +731,54 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       isLoading = true;
     });
 
-    Future.delayed(const Duration(seconds: 2), () {
-      List<Participant> shuffledParticipants = List.from(participants);
-      shuffledParticipants.shuffle(Random());
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        );
+      },
+    );
 
-      int halfSize = (shuffledParticipants.length / 2).ceil();
-      teamA = shuffledParticipants.sublist(0, halfSize);
-      teamB = shuffledParticipants.sublist(halfSize);
+    Future.delayed(const Duration(seconds: 2), () {
+      // List of artificial participants' names
+      List<String> names = [
+        'Jan Kowalski',
+        'Anna Nowak',
+        'Piotr Wiśniewski',
+        'Katarzyna Wójcik',
+        'Paweł Kamiński',
+        'Małgorzata Lewandowska',
+        'Tomasz Zieliński'
+      ];
+
+      // Add 7 artificial participants
+      List<Participant> artificialParticipants = List.generate(7, (index) {
+        return Participant(
+          name: names[index],
+          rating: (index % 5) + 1, // Simple ratings from 1 to 5
+          userId: 'artificial_${index + 1}',
+        );
+      });
+
+      // Combine current participants with artificial participants
+      List<Participant> allParticipants = List.from(participants)
+        ..addAll(artificialParticipants);
+
+      allParticipants.shuffle(Random());
+
+      int halfSize = (allParticipants.length / 2).ceil();
+      teamA = allParticipants.sublist(0, halfSize);
+      teamB = allParticipants.sublist(halfSize);
 
       setState(() {
         isLoading = false;
       });
+
+      Navigator.of(context).pop(); // Close the loading dialog
     });
   }
 
