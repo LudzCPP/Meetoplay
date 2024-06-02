@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'verify_email_page.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -57,9 +58,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'history': [],
         });
 
+        await userCredential.user!.sendEmailVerification();
         Fluttertoast.showToast(
             msg: "Rejestracja pomyślna: ${userCredential.user!.email}");
-        Navigator.pop(context);
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => VerifyEmailPage(user: userCredential.user!)),
+        );
       } catch (e) {
         Fluttertoast.showToast(msg: "Błąd rejestracji: $e");
       }
