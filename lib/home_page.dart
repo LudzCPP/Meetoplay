@@ -19,7 +19,37 @@ class _HomePageState extends State<HomePage> {
 
   final pageOptions = [const MenuPage(), const CalendarPage()];
 
+  Future<void> _ensureUserInFirestore() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid)
+            .set({
+          'email': currentUser.email,
+          'nickname': currentUser.displayName ?? '',
+          'first_name': '',
+          'last_name': '',
+          'city': '',
+          'birthdate': null,
+          'rating': 0,
+          'ratingCounter': 0,
+          'role': 'User',
+          'banned': false,
+          'history': [],
+        });
+      }
+    }
+  }
+
   Future<String> getCurrentUserRole() async {
+    await _ensureUserInFirestore();
     User? currentUser = FirebaseAuth.instance.currentUser;
     DocumentSnapshot userDoc = await FirebaseFirestore.instance
         .collection('users')

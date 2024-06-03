@@ -194,8 +194,11 @@ class MenuPage extends StatelessWidget {
                                     .textTheme
                                     .bodyMedium
                                     ?.copyWith(color: const Color(0xffefefd0))),
+                            const SizedBox(
+                              height: 5,
+                            ),
                             Padding(
-                              padding: const EdgeInsets.all(10.0),
+                              padding: const EdgeInsets.all(5.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [

@@ -114,26 +114,30 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       );
       final UserCredential userCredential =
           await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
 
-      if (await _isUserBanned(userCredential.user!)) {
+      if (user == null) {
+        Fluttertoast.showToast(
+            msg: "Błąd logowania przez Google: użytkownik jest null.");
+        return;
+      }
+
+      if (await _isUserBanned(user)) {
         await _auth.signOut();
         Fluttertoast.showToast(
             msg: "Twoje konto zostało zablokowane i nie możesz się zalogować.");
-      } else {
-        // Check if user already exists in Firestore
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .get();
-
-        if (!userDoc.exists) {
-          // Add user to Firestore only if the user does not exist
-          await _addUserToFirestore(userCredential.user!);
-        }
-
-        Fluttertoast.showToast(
-            msg: "Zalogowano przez Google: ${userCredential.user!.email}");
+        return;
       }
+
+      // Check if user already exists in Firestore
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (!userDoc.exists) {
+        // Add user to Firestore only if the user does not exist
+        await _addUserToFirestore(user);
+      }
+
+      Fluttertoast.showToast(msg: "Zalogowano przez Google: ${user.email}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania przez Google: $e");
     }
