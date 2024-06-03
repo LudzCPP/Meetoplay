@@ -8,6 +8,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/main.dart'; // Ensure navigatorKey is defined here
 import 'package:meetoplay/models/meetings.dart';
+import 'package:meetoplay/verify_email_page.dart';
 import 'global_variables.dart';
 import 'meet_marker.dart';
 
@@ -22,8 +23,11 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           User? user = snapshot.data;
 
-          if (user == null) {
+          if (user == null ) {
             return const AuthenticationScreen();
+          }
+          if(user.emailVerified == false){
+            return VerifyEmailPage(user: user);
           } else {
             // Listen for token changes to manage user session
             FirebaseAuth.instance.idTokenChanges().listen((User? user) async {

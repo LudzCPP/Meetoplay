@@ -92,11 +92,6 @@ void main() async {
     });
   }
 
-  //var date = DateTime.now();
-  //PushNotifications().scheduleNotification('test', date);
-  // NotificationService().initializeNotification();
-  // NotificationService().showNotification(1, 'Hi Guys', 'I am Mahdi');
-
   runApp(const MyApp());
 }
 
