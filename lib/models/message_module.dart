@@ -93,7 +93,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
     if (_messageController.text.isNotEmpty) {
       _firestore?.collection('meetingchats').doc(widget.meetingId).collection('messages').add({
         'text': _messageController.text,
-        'sender': _auth.currentUser!.email,
+        'sender': _auth.currentUser!.displayName,
         'timestamp': Timestamp.now(),
       });
       _messageController.clear();
