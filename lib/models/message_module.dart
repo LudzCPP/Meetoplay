@@ -91,7 +91,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
 
   void _sendMessage() {
     if (_messageController.text.isNotEmpty) {
-      _firestore?.collection('meetingchat_${widget.meetingId}').add({
+      _firestore?.collection('meetingchats').doc(widget.meetingId).collection('messages').add({
         'text': _messageController.text,
         'sender': _auth.currentUser!.email,
         'timestamp': Timestamp.now(),
@@ -117,7 +117,7 @@ class MessagesStream extends StatelessWidget {
       return const Text('Firestore or Meeting ID not available');
     }
     return StreamBuilder<QuerySnapshot>(
-      stream: firestore?.collection('meetingchat_$meetingId').orderBy('timestamp', descending: true).snapshots(),
+      stream: firestore?.collection('meetingchats').doc(meetingId).collection('messages').orderBy('timestamp', descending: true).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Center(
@@ -141,10 +141,10 @@ class MessagesStream extends StatelessWidget {
           );
           messageBubbles.add(messageBubble);
         }
-        return SingleChildScrollView(  // Wrap with a SingleChildScrollView
+        return SingleChildScrollView(
           child: Container(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.3, // Set a maximum height
+              maxHeight: MediaQuery.of(context).size.height * 0.3,
             ),
             child: ListView(
               reverse: true,
@@ -157,5 +157,3 @@ class MessagesStream extends StatelessWidget {
     );
   }
 }
-
-
