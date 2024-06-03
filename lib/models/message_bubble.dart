@@ -18,13 +18,13 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       child: Align(
-        alignment: sender == FirebaseAuth.instance.currentUser?.email
+        alignment: sender == FirebaseAuth.instance.currentUser?.displayName
             ? Alignment.topRight
             : Alignment.topLeft,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           decoration: BoxDecoration(
-            color: sender == FirebaseAuth.instance.currentUser?.email
+            color: sender == FirebaseAuth.instance.currentUser?.displayName
                 ? darkBlue
                 : Colors.grey,
             borderRadius: BorderRadius.circular(20),
