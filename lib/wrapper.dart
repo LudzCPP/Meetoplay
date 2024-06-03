@@ -26,7 +26,7 @@ class AuthWrapper extends StatelessWidget {
           if (user == null ) {
             return const AuthenticationScreen();
           }
-          if(user.emailVerified == false){
+          if(user.emailVerified == false && user.isAnonymous == false){
             return VerifyEmailPage(user: user);
           } else {
             // Listen for token changes to manage user session

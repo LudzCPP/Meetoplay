@@ -86,7 +86,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Email weryfikacyjny został wysłany na adres: ${widget.user.email}. Proszę sprawdzić skrzynkę pocztową i kliknąć w link weryfikacyjny.",
+                    'Email weryfikacyjny został wysłany\n na adres: ${widget.user.email}. \nProszę sprawdzić skrzynkę pocztową i kliknąć w link weryfikacyjny.',
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontSize: 16, color: white),
                   ),
@@ -96,7 +96,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: specialActionButtonColor,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 15),
+                          horizontal: 30, vertical: 15),
                       textStyle: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
