@@ -245,48 +245,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Widget buildTeamsDisplay() {
-    return isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Skład drużyny A:',
-                  style: TextStyle(
-                      fontSize: 18, color: white, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ...teamA.map((participant) => ListTile(
-                    leading: const Icon(Icons.person, color: Colors.white),
-                    title: Text(participant.name,
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
-                    subtitle: Text('Ocena: ${participant.rating}',
-                        style: const TextStyle(color: Colors.white)),
-                  )),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Skład drużyny B:',
-                  style: TextStyle(
-                      fontSize: 18, color: white, fontWeight: FontWeight.bold),
-                ),
-              ),
-              ...teamB.map((participant) => ListTile(
-                    leading: const Icon(Icons.person, color: Colors.white),
-                    title: Text(participant.name,
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold)),
-                    subtitle: Text('Ocena: ${participant.rating}',
-                        style: const TextStyle(color: Colors.white)),
-                  )),
-            ],
-          );
-  }
-
   void endEvent() async {
     final batch = FirebaseFirestore.instance.batch();
 
@@ -727,59 +685,68 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   void drawTeams() {
-    setState(() {
-      isLoading = true;
-    });
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        );
+        return const LoadingScreen();
       },
     );
 
     Future.delayed(const Duration(seconds: 2), () {
-      // List of artificial participants' names
-      List<String> names = [
-        'Jan Kowalski',
-        'Anna Nowak',
-        'Piotr Wiśniewski',
-        'Katarzyna Wójcik',
-        'Paweł Kamiński',
-        'Małgorzata Lewandowska',
-        'Tomasz Zieliński'
-      ];
+      List<Participant> shuffledParticipants = List.from(participants);
+      shuffledParticipants.shuffle(Random());
 
-      // Add 7 artificial participants
-      List<Participant> artificialParticipants = List.generate(7, (index) {
-        return Participant(
-          name: names[index],
-          rating: (index % 5) + 1, // Simple ratings from 1 to 5
-          userId: 'artificial_${index + 1}',
-        );
-      });
+      int halfSize = (shuffledParticipants.length / 2).ceil();
+      teamA = shuffledParticipants.sublist(0, halfSize);
+      teamB = shuffledParticipants.sublist(halfSize);
 
-      // Combine current participants with artificial participants
-      List<Participant> allParticipants = List.from(participants)
-        ..addAll(artificialParticipants);
-
-      allParticipants.shuffle(Random());
-
-      int halfSize = (allParticipants.length / 2).ceil();
-      teamA = allParticipants.sublist(0, halfSize);
-      teamB = allParticipants.sublist(halfSize);
+      Navigator.of(context).pop(); // Close the loading screen dialog
 
       setState(() {
         isLoading = false;
       });
-
-      Navigator.of(context).pop(); // Close the loading dialog
     });
+  }
+
+  Widget buildTeamsDisplay() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Skład drużyny A:',
+            style: TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...teamA.map((participant) => ListTile(
+              leading: const Icon(Icons.person, color: Colors.white),
+              title: Text(participant.name,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: Text('Ocena: ${participant.rating}',
+                  style: const TextStyle(color: Colors.white)),
+            )),
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            'Skład drużyny B:',
+            style: TextStyle(
+                fontSize: 18, color: white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...teamB.map((participant) => ListTile(
+              leading: const Icon(Icons.person, color: Colors.white),
+              title: Text(participant.name,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: Text('Ocena: ${participant.rating}',
+                  style: const TextStyle(color: Colors.white)),
+            )),
+      ],
+    );
   }
 
   Widget buildChatSection(String meetingId) {

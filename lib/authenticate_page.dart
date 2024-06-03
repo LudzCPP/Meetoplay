@@ -196,11 +196,14 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 ElevatedButton(
                   onPressed: _signInWithEmail,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: specialActionButtonColor,
+                    backgroundColor: darkBlue,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 15),
                     textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: white),
+                    foregroundColor: white, // Ensure text color is white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -211,18 +214,21 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                 ElevatedButton(
                   onPressed: _signInAnonymously,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: orange,
+                    backgroundColor: darkBlue,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 15),
                     textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: white),
+                    foregroundColor: white, // Ensure text color is white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: const Text('Kontynuuj bez logowania'),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -232,18 +238,21 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: pink,
+                    backgroundColor: darkBlue,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 15),
                     textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: white),
+                    foregroundColor: white, // Ensure text color is white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: const Text('Rejestracja przez email'),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _signInWithGoogle,
                   style: ElevatedButton.styleFrom(
@@ -251,14 +260,17 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 15),
                     textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: white),
+                    foregroundColor: white, // Ensure text color is white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   child: const Text('Zaloguj przez Google'),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -272,7 +284,10 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 50, vertical: 15),
                     textStyle: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: white),
+                    foregroundColor: white, // Ensure text color is white
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
