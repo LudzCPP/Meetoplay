@@ -1,0 +1,40 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('Firestore Performance Tests', () {
+    setUpAll(() async {
+      const FirebaseOptions firebaseOptions = FirebaseOptions(
+        apiKey: 'AIzaSyDr93mJ9McRMqPS86CD3BnxWzJvbXsr3Aw',
+        authDomain: 'meetoplay-91a7d.firebaseapp.com',
+        projectId: 'meetoplay-91a7d',
+        storageBucket: 'meetoplay-91a7d.appspot.com',
+        messagingSenderId: '527654279314',
+        appId: '1:527654279314:android:024c149a56ff11a1d2ee4b',
+      );
+
+      await Firebase.initializeApp(options: firebaseOptions);
+    });
+
+    testWidgets('Firestore response time is less than 1 second', (WidgetTester tester) async {
+      final firestore = FirebaseFirestore.instance;
+      final stopwatch = Stopwatch()..start();
+
+      // Wykonaj zapytanie do Firestore
+      final querySnapshot = await firestore.collection('users').get();
+
+      stopwatch.stop();
+
+      final responseTime = stopwatch.elapsedMilliseconds;
+      print('Firestore response time: $responseTime ms');
+
+      // Sprawdź, czy zapytanie zakończyło się sukcesem i czas odpowiedzi jest mniejszy niż 1 sekunda
+      expect(querySnapshot.docs.isNotEmpty, true);
+      expect(responseTime, lessThan(1500)); // Czas odpowiedzi nie dłuższy niż 1 sekunda
+    });
+  });
+}
