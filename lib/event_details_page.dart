@@ -134,7 +134,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                           const SizedBox(height: 20),
                           buildTeamsDisplay(),
                           const SizedBox(height: 20),
-                          if (!isGuest)
+                          if (!isGuest && joined)
                             buildChatSection(widget.meeting.meetingId),
                         ],
                       ),
