@@ -16,10 +16,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedPage = 0;
+  String userRole = '';
+  bool isLoading = true;
 
   final pageOptions = [const MenuPage(), const CalendarPage()];
 
-  Future<void> _ensureUserInFirestore() async {
+  @override
+  void initState() {
+    super.initState();
+    _getUserRole();
+  }
+
+  Future<void> _getUserRole() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
@@ -27,131 +35,127 @@ class _HomePageState extends State<HomePage> {
           .doc(currentUser.uid)
           .get();
 
-      if (!userDoc.exists) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .set({
-          'email': currentUser.email,
-          'nickname': currentUser.displayName ?? '',
-          'first_name': '',
-          'last_name': '',
-          'city': '',
-          'birthdate': null,
-          'rating': 0,
-          'ratingCounter': 0,
-          'role': 'User',
-          'banned': false,
-          'history': [],
+      if (userDoc.exists) {
+        setState(() {
+          userRole = userDoc['role'];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          userRole = 'Guest';
+          isLoading = false;
         });
       }
+    } else {
+      setState(() {
+        userRole = 'Guest';
+        isLoading = false;
+      });
     }
-  }
-
-  Future<String> getCurrentUserRole() async {
-    await _ensureUserInFirestore();
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser?.uid)
-        .get();
-    return userDoc['role'];
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: getCurrentUserRole(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Błąd: ${snapshot.error}'));
-        } else if (!snapshot.hasData) {
-          return const Center(
-              child: Text('Nie można pobrać roli użytkownika.'));
-        } else {
-          String userRole = snapshot.data!;
-          bool isGuest = userRole == 'Guest';
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          backgroundColor: lightBlue,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        ),
+      );
+    }
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Meetoplay'),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const ProfilePage();
-                        },
-                      ),
-                    );
+    bool isGuest = userRole == 'Guest';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Meetoplay'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) {
+                    return const ProfilePage();
                   },
-                  icon: const Icon(
-                    Icons.person,
-                    size: 40,
+                ),
+              );
+            },
+            icon: const Icon(
+              Icons.person,
+              size: 40,
+            ),
+          ),
+        ],
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [darkBlue, lightBlue],
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
+            ),
+          ),
+        ),
+      ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: IndexedStack(
+          key: ValueKey<int>(selectedPage),
+          index: selectedPage,
+          children: pageOptions,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: isGuest
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const CreateMeetPage();
+                    },
                   ),
+                );
+              },
+              shape: const CircleBorder(),
+              backgroundColor: pink,
+              elevation: 4.0,
+              child: const Icon(Icons.add),
+            ),
+      bottomNavigationBar: isGuest
+          ? null
+          : BottomNavigationBar(
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              backgroundColor: darkBlue,
+              selectedItemColor: white,
+              unselectedItemColor: white.withOpacity(0.5),
+              currentIndex: selectedPage,
+              onTap: (index) {
+                setState(() {
+                  selectedPage = index;
+                });
+              },
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home, size: 45),
+                  label: '',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.event, size: 45),
+                  label: '',
                 ),
               ],
-              flexibleSpace: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [darkBlue, lightBlue],
-                    begin: Alignment.bottomRight,
-                    end: Alignment.topLeft,
-                  ),
-                ),
-              ),
             ),
-            body: pageOptions[selectedPage],
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
-            floatingActionButton: isGuest
-                ? null
-                : FloatingActionButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return const CreateMeetPage();
-                          },
-                        ),
-                      );
-                    },
-                    shape: const CircleBorder(),
-                    backgroundColor: pink,
-                    elevation: 4.0,
-                    child: const Icon(Icons.add),
-                  ),
-            bottomNavigationBar: isGuest
-                ? null
-                : BottomNavigationBar(
-                    showSelectedLabels: false,
-                    showUnselectedLabels: false,
-                    backgroundColor: darkBlue,
-                    selectedItemColor: white,
-                    unselectedItemColor: white.withOpacity(0.5),
-                    currentIndex: selectedPage,
-                    onTap: (index) {
-                      setState(() {
-                        selectedPage = index;
-                      });
-                    },
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home, size: 45),
-                        label: '',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.event, size: 45),
-                        label: '',
-                      ),
-                    ],
-                  ),
-          );
-        }
-      },
     );
   }
 }

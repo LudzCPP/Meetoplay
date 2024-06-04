@@ -66,7 +66,10 @@ class _CalendarPageState extends State<CalendarPage> {
       return const Scaffold(
         backgroundColor: darkBlue,
         body: Center(
-          child: CircularProgressIndicator(backgroundColor: darkBlue,),
+          child: CircularProgressIndicator(
+            backgroundColor: lightBlue,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
         ),
       );
     }
