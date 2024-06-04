@@ -134,57 +134,16 @@ class _RatingPageState extends State<RatingPage> {
                       final userId = participant['userId'];
                       final alreadyRated = existingRatings.containsKey(userId);
 
-                      return Container(
-                        margin: const EdgeInsets.symmetric(vertical: 10.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 6,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ListTile(
-                          title: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              participant['name'],
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          subtitle: alreadyRated
-                              ? Text(
-                                  'Oceniono: ${existingRatings[userId]}',
-                                  style: const TextStyle(
-                                      color: Colors.black54, fontSize: 20),
-                                )
-                              : RatingBar.builder(
-                                  initialRating: ratings[userId] ?? 0,
-                                  minRating: 1,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: false,
-                                  itemCount: 5,
-                                  itemPadding: const EdgeInsets.symmetric(
-                                      horizontal: 4.0),
-                                  itemBuilder: (context, _) => const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                                  onRatingUpdate: (rating) {
-                                    setState(
-                                      () {
-                                        ratings[userId] = rating;
-                                        newRatings[userId] = rating;
-                                      },
-                                    );
-                                  },
-                                ),
-                        ),
+                      return RatingCard(
+                        participantName: participant['name'],
+                        userId: userId,
+                        initialRating: ratings[userId] ?? 0,
+                        onRatingUpdate: (rating) {
+                          ratings[userId] = rating;
+                          newRatings[userId] = rating;
+                        },
+                        alreadyRated: alreadyRated,
+                        existingRating: existingRatings[userId]?.toDouble(),
                       );
                     },
                   ),
@@ -211,6 +170,71 @@ class _RatingPageState extends State<RatingPage> {
             );
           }
         },
+      ),
+    );
+  }
+}
+
+class RatingCard extends StatelessWidget {
+  final String participantName;
+  final String userId;
+  final double initialRating;
+  final Function(double) onRatingUpdate;
+  final bool alreadyRated;
+  final double? existingRating;
+
+  const RatingCard({
+    super.key,
+    required this.participantName,
+    required this.userId,
+    required this.initialRating,
+    required this.onRatingUpdate,
+    required this.alreadyRated,
+    this.existingRating,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        title: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            participantName,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+        ),
+        subtitle: alreadyRated
+            ? Text(
+                'Oceniono: $existingRating',
+                style: const TextStyle(color: Colors.black54, fontSize: 20),
+              )
+            : RatingBar.builder(
+                initialRating: initialRating,
+                minRating: 1,
+                direction: Axis.horizontal,
+                allowHalfRating: false,
+                itemCount: 5,
+                itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                itemBuilder: (context, _) => const Icon(
+                  Icons.star,
+                  color: Colors.amber,
+                ),
+                onRatingUpdate: onRatingUpdate,
+              ),
       ),
     );
   }
