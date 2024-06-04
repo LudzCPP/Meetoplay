@@ -1,10 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:meetoplay/calendar_page.dart';
 import 'package:meetoplay/create_meet_page.dart';
+import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/global_variables.dart';
+import 'package:meetoplay/meet_marker.dart';
 import 'package:meetoplay/menu_page.dart';
+import 'package:meetoplay/models/meetings.dart';
 import 'package:meetoplay/profile_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,7 +28,15 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _getUserRole();
+    _loadUserRoleAndMeetings();
+  }
+
+  Future<void> _loadUserRoleAndMeetings() async {
+    await _getUserRole();
+    await _loadMeetings();
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _getUserRole() async {
@@ -38,29 +50,88 @@ class _HomePageState extends State<HomePage> {
       if (userDoc.exists) {
         setState(() {
           userRole = userDoc['role'];
-          isLoading = false;
         });
       } else {
         setState(() {
           userRole = 'Guest';
-          isLoading = false;
         });
       }
     } else {
       setState(() {
         userRole = 'Guest';
-        isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadMeetings() async {
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('meetings').get();
+
+    globalMarkers.clear();
+    globalMeetings.clear();
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      LatLng location = LatLng(
+        data['location']['latitude'],
+        data['location']['longitude'],
+      );
+
+      List<Participant> participants = [];
+      for (var participant in data['participants']) {
+        String name = participant['name'] ?? 'Nieznany';
+        double rating = (participant['rating']?.toDouble() ?? 0);
+
+        participants.add(Participant(
+          name: name,
+          rating: rating,
+          userId: participant['userId'],
+        ));
+      }
+
+      Meeting meeting = Meeting(
+        meetingId: data['meetingId'],
+        name: data['name'],
+        location: location,
+        date: data['date'],
+        time: data['time'],
+        category: data['category'],
+        skillLevel: data['skillLevel'],
+        maxParticipants: data['maxParticipants'],
+        waitListCount: data['waitListCount'],
+        organizerName: data['organizerName'],
+        organizerRating: data['organizerRating'],
+        participants: participants,
+        ownerId: data['ownerId'],
+      );
+
+      globalMeetings.add(meeting);
+
+      if (data['ownerId'] == FirebaseAuth.instance.currentUser!.uid) {
+        globalMarkers.add(MeetMarker(
+          location: location,
+          meeting: meeting,
+          color: Colors.red,
+        ));
+      } else {
+        globalMarkers.add(MeetMarker(
+          location: location,
+          meeting: meeting,
+          color: Colors.blue,
+        ));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          backgroundColor: lightBlue,
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            backgroundColor: lightBlue,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
         ),
       );
     }

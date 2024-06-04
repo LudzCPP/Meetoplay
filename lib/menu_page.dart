@@ -1,6 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,85 +13,44 @@ import 'package:meetoplay/models/meetings.dart';
 class MenuPage extends StatelessWidget {
   const MenuPage({super.key});
 
+  Meeting? findNearestMeeting(List<Meeting> meetings) {
+    if (meetings.isEmpty) return null;
+
+    DateTime now = DateTime.now();
+    Meeting? nearestMeeting;
+    Duration? nearestDuration;
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+    for (Meeting meeting in meetings) {
+      bool isParticipant = meeting.participants
+          .any((participant) => participant.userId == currentUserId);
+      if (!isParticipant) continue;
+
+      String dateTimeString = '${meeting.date}/${meeting.time}';
+      List<String> dateTimeParts = dateTimeString.split('/');
+      String formattedDate =
+          '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
+      String formattedTime = dateTimeParts[3].padLeft(5, '0');
+      String formattedDateTimeString = '$formattedDate $formattedTime';
+
+      DateTime meetingDateTime =
+          DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
+
+      if (meetingDateTime.isAfter(now)) {
+        Duration difference = meetingDateTime.difference(now);
+        if (nearestDuration == null || difference < nearestDuration) {
+          nearestDuration = difference;
+          nearestMeeting = meeting;
+        }
+      }
+    }
+
+    return nearestMeeting;
+  }
+
   @override
   Widget build(BuildContext context) {
-    Future<String> getCurrentUserRole() async {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser?.uid)
-          .get();
-      print(userDoc['role']);
-      return userDoc['role'];
-    }
-
-    Meeting? findNearestMeeting(List<Meeting> meetings) {
-      if (meetings.isEmpty) return null;
-
-      // Aktualna data i czas
-      DateTime now = DateTime.now();
-      //print("${now.hour}, ${now.minute}");
-
-      // Znajdź najbliższe wydarzenie
-      Meeting? nearestMeeting;
-      Duration? nearestDuration;
-      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
-      for (Meeting meeting in meetings) {
-        // Sprawdź, czy bieżący użytkownik jest uczestnikiem
-        bool isParticipant = meeting.participants
-            .any((participant) => participant.userId == currentUserId);
-        if (!isParticipant) continue;
-
-        // Dostosowanie formatu daty i czasu
-        String dateTimeString = '${meeting.date}/${meeting.time}';
-        List<String> dateTimeParts = dateTimeString.split('/');
-        String formattedDate =
-            '${dateTimeParts[2]}-${dateTimeParts[1].padLeft(2, '0')}-${dateTimeParts[0].padLeft(2, '0')}';
-        String formattedTime = dateTimeParts[3].padLeft(5, '0');
-        String formattedDateTimeString = '$formattedDate $formattedTime';
-
-        // Parsowanie do obiektu DateTime
-        DateTime meetingDateTime =
-            DateTime.tryParse(formattedDateTimeString) ?? DateTime.now();
-
-        if (meetingDateTime.isAfter(now)) {
-          Duration difference = meetingDateTime.difference(now);
-          if (nearestDuration == null || difference < nearestDuration) {
-            nearestDuration = difference;
-            nearestMeeting = meeting;
-          }
-        }
-      }
-
-      return nearestMeeting;
-    }
-
-    List<Meeting> userMeetings = [];
-
-    List<Meeting> getUserMeetings() {
-      for (var meeting in globalMeetings) {
-        for (var participant in meeting.participants) {
-          if (participant == currentUser) {
-            userMeetings.add(meeting);
-          }
-        }
-      }
-
-      return userMeetings;
-    }
-
-    // Get the nearest meeting
     Meeting? nearestMeeting = findNearestMeeting(globalMeetings);
-
-    // Function to format date
-    String formatDate(DateTime date) {
-      return DateFormat('dd MMMM yyyy').format(date);
-    }
-
-    String formatTime(DateTime time) {
-      return DateFormat('HH:mm').format(time);
-    }
 
     return Center(
       child: Padding(
@@ -159,98 +116,80 @@ class MenuPage extends StatelessWidget {
               ),
             ),
             const Spacer(flex: 1),
-            FutureBuilder<String>(
-              future: getCurrentUserRole(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Błąd: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data == 'Guest') {
-                  return const SizedBox();
-                } else {
-                  return Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: GestureDetector(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff1a659e),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.8),
-                              spreadRadius: 0,
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+            if (nearestMeeting != null)
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: GestureDetector(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xff1a659e),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.8),
+                          spreadRadius: 0,
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
                         ),
-                        child: Column(
-                          children: [
-                            Text('Nadchodzące wydarzenie',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(color: const Color(0xffefefd0))),
-                            const SizedBox(
-                              height: 5,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Text('Nadchodzące wydarzenie',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: const Color(0xffefefd0))),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.event_note,
+                                  size: 60, color: Color(0xffff6b35)),
+                              const SizedBox(width: 20),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.event_note,
-                                      size: 60, color: Color(0xffff6b35)),
-                                  const SizedBox(width: 20),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        nearestMeeting?.name ??
-                                            'Brak wydarzenia',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                                color: const Color(0xffefefd0)),
-                                      ),
-                                      Text(
-                                        nearestMeeting != null
-                                            ? '${nearestMeeting.date} ${nearestMeeting.time}'
-                                            : '',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xffefefd0),
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    nearestMeeting.name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                            color: const Color(0xffefefd0)),
+                                  ),
+                                  Text(
+                                    '${nearestMeeting.date} ${nearestMeeting.time}',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Color(0xffefefd0),
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      onTap: () {
-                        if (nearestMeeting != null) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EventDetailsPage(meeting: nearestMeeting),
-                            ),
-                          );
-                        }
-                      },
+                      ],
                     ),
-                  );
-                }
-              },
-            ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EventDetailsPage(meeting: nearestMeeting),
+                      ),
+                    );
+                  },
+                ),
+              ),
             const Spacer(flex: 2),
           ],
         ),

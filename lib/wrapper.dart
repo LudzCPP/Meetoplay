@@ -4,9 +4,7 @@ import 'package:meetoplay/authenticate_page.dart';
 import 'package:meetoplay/event_details_page.dart';
 import 'package:meetoplay/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:meetoplay/main.dart'; // Ensure navigatorKey is defined here
 import 'package:meetoplay/models/meetings.dart';
 import 'package:meetoplay/verify_email_page.dart';
 import 'global_variables.dart';
@@ -23,10 +21,10 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           User? user = snapshot.data;
 
-          if (user == null ) {
+          if (user == null) {
             return const AuthenticationScreen();
           }
-          if(user.emailVerified == false && user.isAnonymous == false){
+          if (user.emailVerified == false && user.isAnonymous == false) {
             return VerifyEmailPage(user: user);
           } else {
             // Listen for token changes to manage user session
@@ -44,61 +42,10 @@ class AuthWrapper extends StatelessWidget {
             });
 
             // Fetch user-specific data from Firestore and update global markers
-            return StreamBuilder<QuerySnapshot>(
-              //stream: FirebaseFirestore.instance.collection('meetings').where('userId', isEqualTo: user.uid).snapshots(),
-              stream:
-                  FirebaseFirestore.instance.collection('meetings').snapshots(),
+            return FutureBuilder<void>(
+              future: _fetchMeetingsAndMarkers(user),
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  globalMarkers.clear();
-                  globalMeetings.clear();
-                  print('restart');
-                  for (var doc in snapshot.data!.docs) {
-                    var data = doc.data() as Map<String, dynamic>;
-                    LatLng location = LatLng(data['location']['latitude'],
-                        data['location']['longitude']);
-                    List<Participant> participants = [];
-                    for (var participant in data['participants']) {
-                      // Sprawdź czy każde pole uczestnika istnieje i nie jest nullem
-                      String name = participant['name'] ??
-                          'Nieznany'; // Użyj domyślnej nazwy jeśli pole jest puste
-                      double rating = participant['rating'].toDouble() ??
-                          0; // Użyj domyślnej oceny jeśli pole jest puste
-
-                      // Dodaj uczestnika do listy z wczytanymi i sprawdzonymi danymi
-                      participants.add(Participant(name: name, rating: rating.toDouble(), userId: participant['userId']));
-                    }
-
-                    Meeting meeting = Meeting(
-                        meetingId: data['meetingId'],
-                        name: data['name'],
-                        location: location,
-                        date: data['date'],
-                        time: data['time'],
-                        category: data['category'],
-                        skillLevel: data['skillLevel'],
-                        maxParticipants: data['maxParticipants'],
-                        waitListCount: data['waitListCount'],
-                        organizerName: data['organizerName'],
-                        organizerRating: data['organizerRating'],
-                        participants: participants,
-                        ownerId: data['ownerId']);
-                    globalMeetings.add(meeting);
-                    if (data['owner'] == user.uid) {
-                      globalMarkers.add(MeetMarker(
-                        location: location,
-                        meeting: meeting,
-                        color:
-                            Colors.red, // Example: dynamic color based on data
-                      ));
-                    } else {
-                      globalMarkers.add(MeetMarker(
-                        location: location,
-                        meeting: meeting,
-                        color: Colors.blue,
-                      ));
-                    }
-                  }
+                if (snapshot.connectionState == ConnectionState.done) {
                   return const HomePage();
                 } else if (snapshot.hasError) {
                   return Scaffold(
@@ -125,5 +72,67 @@ class AuthWrapper extends StatelessWidget {
         }
       },
     );
+  }
+
+  Future<void> _fetchMeetingsAndMarkers(User user) async {
+    globalMarkers.clear();
+    globalMeetings.clear();
+
+    QuerySnapshot snapshot =
+        await FirebaseFirestore.instance.collection('meetings').get();
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      LatLng location = LatLng(
+        data['location']['latitude'],
+        data['location']['longitude'],
+      );
+
+      List<Participant> participants = [];
+      for (var participant in data['participants']) {
+        // Check if each field of the participant exists and is not null
+        String name = participant['name'] ?? 'Nieznany';
+        double rating = (participant['rating']?.toDouble() ?? 0);
+
+        // Add participant to the list with validated data
+        participants.add(Participant(
+          name: name,
+          rating: rating,
+          userId: participant['userId'],
+        ));
+      }
+
+      Meeting meeting = Meeting(
+        meetingId: data['meetingId'],
+        name: data['name'],
+        location: location,
+        date: data['date'],
+        time: data['time'],
+        category: data['category'],
+        skillLevel: data['skillLevel'],
+        maxParticipants: data['maxParticipants'],
+        waitListCount: data['waitListCount'],
+        organizerName: data['organizerName'],
+        organizerRating: data['organizerRating'],
+        participants: participants,
+        ownerId: data['ownerId'],
+      );
+
+      globalMeetings.add(meeting);
+
+      if (data['ownerId'] == user.uid) {
+        globalMarkers.add(MeetMarker(
+          location: location,
+          meeting: meeting,
+          color: Colors.red, // Example: dynamic color based on data
+        ));
+      } else {
+        globalMarkers.add(MeetMarker(
+          location: location,
+          meeting: meeting,
+          color: Colors.blue,
+        ));
+      }
+    }
   }
 }
