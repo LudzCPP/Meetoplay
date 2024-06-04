@@ -59,13 +59,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     List<Participant> updatedParticipants = List<Participant>.from(
         (data['participants'] as List).map((item) => Participant(
               name: item['name'],
-              rating: item['rating'],
+              rating: item['rating'].toDouble(),
               userId: item['userId'],
             )));
     List<Participant> updatedWaitingList = List<Participant>.from(
         (data['waitingList'] as List).map((item) => Participant(
               name: item['name'],
-              rating: item['rating'],
+              rating: item['rating'].toDouble(),
               userId: item['userId'],
             )));
     setState(() {
@@ -346,7 +346,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 List<Participant> participants = List<Participant>.from(
                     (data['participants'] as List).map((item) => Participant(
                         name: item['name'],
-                        rating: item['rating'],
+                        rating: item['rating'].toDouble(),
                         userId: item['userId'])));
                 return ListView.builder(
                   shrinkWrap: true,
@@ -417,7 +417,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 List<Participant> waitingList = List<Participant>.from(
                     (data['waitingList'] as List).map((item) => Participant(
                         name: item['name'],
-                        rating: item['rating'],
+                        rating: item['rating'].toDouble(),
                         userId: item['userId'])));
                 return ListView.builder(
                   shrinkWrap: true,

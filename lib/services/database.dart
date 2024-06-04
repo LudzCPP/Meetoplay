@@ -43,11 +43,13 @@ class DatabaseService {
         'waitListCount': waitListCount,
         'organizerName': organizerName,
         'organizerRating': organizerRating,
-        'participants': participants.map((p) => {
-          'name': p.name,
-          'rating': p.rating,
-          'userId': p.userId,
-        }).toList(),
+        'participants': participants
+            .map((p) => {
+                  'name': p.name,
+                  'rating': p.rating,
+                  'userId': p.userId,
+                })
+            .toList(),
         'waitingList': [],
         'ownerId': ownerId
       });
@@ -88,16 +90,20 @@ class DatabaseService {
         'waitListCount': waitListCount,
         'organizerName': organizerName,
         'organizerRating': organizerRating,
-        'participants': participants.map((p) => {
-          'name': p.name,
-          'rating': p.rating,
-          'userId': p.userId,
-        }).toList(),
-        'waitingList': waitingList.map((p) => {
-          'name': p.name,
-          'rating': p.rating,
-          'userId': p.userId,
-        }).toList(),
+        'participants': participants
+            .map((p) => {
+                  'name': p.name,
+                  'rating': p.rating,
+                  'userId': p.userId,
+                })
+            .toList(),
+        'waitingList': waitingList
+            .map((p) => {
+                  'name': p.name,
+                  'rating': p.rating,
+                  'userId': p.userId,
+                })
+            .toList(),
         'ownerId': ownerId
       });
     } catch (e) {
@@ -105,7 +111,8 @@ class DatabaseService {
     }
   }
 
-  Future<void> addMeetingParticipant(String meetingId, Participant newParticipant) async {
+  Future<void> addMeetingParticipant(
+      String meetingId, Participant newParticipant) async {
     DocumentReference meetingRef = meetingsCollection.doc(meetingId);
     DocumentSnapshot meetingDoc = await meetingRef.get();
     var data = meetingDoc.data() as Map<String, dynamic>;
@@ -113,49 +120,85 @@ class DatabaseService {
 
     if (participants.length < data['maxParticipants']) {
       await meetingRef.update({
-        'participants': FieldValue.arrayUnion([{
-          'name': newParticipant.name,
-          'rating': newParticipant.rating,
-          'userId': newParticipant.userId,
-        }]),
+        'participants': FieldValue.arrayUnion([
+          {
+            'name': newParticipant.name,
+            'rating': newParticipant.rating,
+            'userId': newParticipant.userId,
+          }
+        ]),
       });
     } else {
       await addWaitingListParticipant(meetingId, newParticipant);
     }
   }
 
-  Future<void> addWaitingListParticipant(String meetingId, Participant newParticipant) async {
+  Future<void> addWaitingListParticipant(
+      String meetingId, Participant newParticipant) async {
     DocumentReference meetingRef = meetingsCollection.doc(meetingId);
     await meetingRef.update({
-      'waitingList': FieldValue.arrayUnion([{
-        'name': newParticipant.name,
-        'rating': newParticipant.rating,
-        'userId': newParticipant.userId,
-      }]),
+      'waitingList': FieldValue.arrayUnion([
+        {
+          'name': newParticipant.name,
+          'rating': newParticipant.rating,
+          'userId': newParticipant.userId,
+        }
+      ]),
     });
   }
 
-  Future<void> removeMeetingParticipant(String meetingId, Participant participant) async {
-    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
-    await meetingRef.update({
-      'participants': FieldValue.arrayRemove([{
-        'name': participant.name,
-        'rating': participant.rating,
-        'userId': participant.userId,
-      }]),
-    });
-    await moveParticipantFromWaitingListToParticipants(meetingId);
+  Future<void> removeMeetingParticipant(
+      String meetingId, Participant participant) async {
+    DocumentReference meetingRef =
+        FirebaseFirestore.instance.collection('meetings').doc(meetingId);
+    DocumentSnapshot meetingSnapshot = await meetingRef.get();
+    Map<String, dynamic> meetingData =
+        meetingSnapshot.data() as Map<String, dynamic>;
+
+    List<dynamic> participants = meetingData['participants'] ?? [];
+    List<dynamic> waitingList = meetingData['waitingList'] ?? [];
+
+    if (participants.any((p) => p['userId'] == participant.userId)) {
+      // Remove participant from participants list
+      await meetingRef.update({
+        'participants': FieldValue.arrayRemove([
+          {
+            'name': participant.name,
+            'rating': participant.rating,
+            'userId': participant.userId,
+          }
+        ]),
+      });
+      await moveParticipantFromWaitingListToParticipants(meetingId);
+    } else if (waitingList.any((p) => p['userId'] == participant.userId)) {
+      // Remove participant from waiting list
+      await meetingRef.update({
+        'waitingList': FieldValue.arrayRemove([
+          {
+            'name': participant.name,
+            'rating': participant.rating,
+            'userId': participant.userId,
+          }
+        ]),
+      });
+    }
   }
 
-  Future<void> moveParticipantFromWaitingListToParticipants(String meetingId) async {
-    DocumentReference meetingRef = meetingsCollection.doc(meetingId);
-    DocumentSnapshot meetingDoc = await meetingRef.get();
-    var data = meetingDoc.data() as Map<String, dynamic>;
-    List participants = data['participants'];
-    List waitingList = data['waitingList'];
+  Future<void> moveParticipantFromWaitingListToParticipants(
+      String meetingId) async {
+    DocumentReference meetingRef =
+        FirebaseFirestore.instance.collection('meetings').doc(meetingId);
+    DocumentSnapshot meetingSnapshot = await meetingRef.get();
+    Map<String, dynamic> meetingData =
+        meetingSnapshot.data() as Map<String, dynamic>;
 
-    if (participants.length < data['maxParticipants'] && waitingList.isNotEmpty) {
-      var nextParticipant = waitingList.removeAt(0);
+    List<dynamic> participants = meetingData['participants'] ?? [];
+    List<dynamic> waitingList = meetingData['waitingList'] ?? [];
+    int maxParticipants = meetingData['maxParticipants'] ?? 0;
+
+    if (participants.length < maxParticipants && waitingList.isNotEmpty) {
+      // Move the first person from the waiting list to the participants list
+      Map<String, dynamic> nextParticipant = waitingList.removeAt(0);
       await meetingRef.update({
         'participants': FieldValue.arrayUnion([nextParticipant]),
         'waitingList': waitingList,
@@ -165,7 +208,8 @@ class DatabaseService {
 
   Future<bool> isUserParticipant(String meetingId, String userId) async {
     try {
-      DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
+      DocumentSnapshot meetingDoc =
+          await meetingsCollection.doc(meetingId).get();
 
       if (meetingDoc.exists) {
         List<dynamic> participants = meetingDoc['participants'];
@@ -223,10 +267,11 @@ class DatabaseService {
       print(e.toString());
     }
   }
-  
+
   Future<bool> isUserInWaitingList(String meetingId, String userId) async {
     try {
-      DocumentSnapshot meetingDoc = await meetingsCollection.doc(meetingId).get();
+      DocumentSnapshot meetingDoc =
+          await meetingsCollection.doc(meetingId).get();
 
       if (meetingDoc.exists) {
         List<dynamic> waitingList = meetingDoc['waitingList'];
@@ -237,7 +282,8 @@ class DatabaseService {
         }
       }
     } catch (e) {
-      print('Błąd podczas sprawdzania obecności użytkownika na liście oczekujących: $e');
+      print(
+          'Błąd podczas sprawdzania obecności użytkownika na liście oczekujących: $e');
     }
 
     return false;
