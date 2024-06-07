@@ -16,7 +16,6 @@ import 'package:timezone/timezone.dart' as tz;
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  // request notification permission
   static Future init() async {
     await _firebaseMessaging.requestPermission(
       alert: true,
@@ -31,18 +30,15 @@ import 'package:timezone/timezone.dart' as tz;
         print("for android device token: $token");
   }
 
-  // get the fcm device token
   static Future getDeviceToken({int maxRetires = 3}) async {
     try {
       String? token;
       if (kIsWeb) {
-        // get the device fcm token
         token = await _firebaseMessaging.getToken(
             vapidKey:
                 "BPA9r_00LYvGIV9GPqkpCwfIl3Es4IfbGqE9CSrm6oeYJslJNmicXYHyWOZQMPlORgfhG8RNGe7hIxmbLXuJ92k");
         print("for web device token: $token");
       } else {
-        // get the device fcm token
         token = await _firebaseMessaging.getToken();
         print("for android device token: $token");
       }
@@ -67,7 +63,6 @@ import 'package:timezone/timezone.dart' as tz;
       await DatabaseService.saveUserToken(token);
       print("save to firestore");
     }
-    // also save if token changes
     _firebaseMessaging.onTokenRefresh.listen((event) async {
       if (isUserLoggedin) {
         await DatabaseService.saveUserToken(token);
@@ -76,9 +71,7 @@ import 'package:timezone/timezone.dart' as tz;
     });
   }
 
-  // initalize local notifications
   static Future localNotiInit() async {
-    // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(
       '@mipmap/ic_launcher',
@@ -95,7 +88,6 @@ import 'package:timezone/timezone.dart' as tz;
             iOS: initializationSettingsDarwin,
             linux: initializationSettingsLinux);
 
-    // request notification permissions for android 13 or above
     _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()!
@@ -106,13 +98,11 @@ import 'package:timezone/timezone.dart' as tz;
         onDidReceiveBackgroundNotificationResponse: onNotificationTap);
   }
 
-  // on tap local notification in foreground
   static void onNotificationTap(NotificationResponse notificationResponse) {
     navigatorKey.currentState!
         .pushNamed('', arguments: notificationResponse);
   }
 
-  // show a simple notification
   static Future showSimpleNotification({
     required String title,
     required String body,

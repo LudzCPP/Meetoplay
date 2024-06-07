@@ -151,7 +151,6 @@ class EventList extends StatelessWidget {
 
   Future<void> _deleteEvent(BuildContext context, String eventId) async {
     try {
-      // Usuń wydarzenie z Firestore
       await _firestore.collection('meetings').doc(eventId).delete();
       Fluttertoast.showToast(msg: "Wydarzenie zostało usunięte.");
     } catch (e) {

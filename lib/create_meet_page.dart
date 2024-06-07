@@ -13,9 +13,7 @@ import 'package:meetoplay/services/notification.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-// Import Meeting class here
 import 'package:meetoplay/models/meetings.dart';
-// Zaimportuj swoją klasę Meeting
 
 class CreateMeetPage extends StatefulWidget {
   const CreateMeetPage({super.key});
@@ -31,11 +29,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   final TextEditingController _eventNameController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController(); // New
+  final TextEditingController _timeController = TextEditingController();
   final TextEditingController _categoryController =
-      TextEditingController(); // New
+      TextEditingController();
   final TextEditingController _skillLevelController =
-      TextEditingController(); // New
+      TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
   String? _selectedLevel;
@@ -113,7 +111,7 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
   String formatTimeOfDay(TimeOfDay time) {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    final format = DateFormat('HH:mm'); // Używając DateFormat z pakietu intl
+    final format = DateFormat('HH:mm');
     return format.format(dt);
   }
 
@@ -162,7 +160,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              // Additional fields for time, category, and skill level
               TextFormField(
                 controller: _dateController,
                 decoration: const InputDecoration(
@@ -487,7 +484,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                             DateTime.now().millisecondsSinceEpoch.toString();
                         List<Participant> participants = [];
 
-                        // Add organizer as a participant if they choose to participate
                         if (_isOrganizerParticipating) {
                           Participant newParticipant = Participant(
                             name: currentUser?.displayName ?? "Anonim",
@@ -510,12 +506,11 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           0,
                           FirebaseAuth.instance.currentUser!.displayName ??
                               "Organizer",
-                          userDoc['rating'].toDouble(), // Example rating
+                          userDoc['rating'].toDouble(),
                           _isOrganizerParticipating ? participants : [],
                           FirebaseAuth.instance.currentUser!.uid,
                         );
 
-                        // Create a new collection in Firebase for meeting chat
                         FirebaseFirestore.instance
                             .collection('meetingchat_$meetingId')
                             .doc('initialDoc')
@@ -530,7 +525,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                           ),
                         );
 
-                        // Dostosowanie formatu daty i czasu
                         String dateTimeString =
                             '${_dateController.text}/${_timeController.text}';
                         List<String> dateTimeParts = dateTimeString.split('/');
@@ -540,7 +534,6 @@ class _CreateMeetPageState extends State<CreateMeetPage> {
                         String formattedDateTimeString =
                             '$formattedDate $formattedTime';
 
-                        // Parsowanie do obiektu DateTime
                         DateTime meetingDateTime =
                             DateTime.tryParse(formattedDateTimeString) ??
                                 DateTime.now();

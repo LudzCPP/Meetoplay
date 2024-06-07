@@ -49,7 +49,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         'role': 'Guest',
         'createdAt': FieldValue.serverTimestamp(),
       });
-      //Fluttertoast.showToast(msg: "Zalogowano jako gość: ${user.uid}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd podczas logowania jako gość: $e");
     }
@@ -87,7 +86,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
       final UserCredential userCredential = await _auth.signInAnonymously();
       await _addGuestToFirestore(userCredential.user!);
       Fluttertoast.showToast(msg: "Zalogowano anonimowo.");
-      //msg: "Zalogowano anonimowo: ${userCredential.user!.uid}");
     } catch (e) {
       Fluttertoast.showToast(msg: "Błąd logowania anonimowego: $e");
     }
@@ -97,7 +95,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     try {
       await _googleSignIn.signOut();
 
-      // Now start the sign-in process
       final GoogleSignInAccount? googleSignInAccount =
           await _googleSignIn.signIn();
       if (googleSignInAccount == null) {
@@ -129,11 +126,9 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
         return;
       }
 
-      // Check if user already exists in Firestore
       final userDoc = await _firestore.collection('users').doc(user.uid).get();
 
       if (!userDoc.exists) {
-        // Add user to Firestore only if the user does not exist
         await _addUserToFirestore(user);
       }
 
@@ -207,7 +202,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: white),
-                    foregroundColor: white, // Ensure text color is white
+                    foregroundColor: white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -225,7 +220,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: white),
-                    foregroundColor: white, // Ensure text color is white
+                    foregroundColor: white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -249,7 +244,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: white),
-                    foregroundColor: white, // Ensure text color is white
+                    foregroundColor: white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -267,7 +262,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: white),
-                    foregroundColor: white, // Ensure text color is white
+                    foregroundColor: white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -291,7 +286,7 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: white),
-                    foregroundColor: white, // Ensure text color is white
+                    foregroundColor: white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

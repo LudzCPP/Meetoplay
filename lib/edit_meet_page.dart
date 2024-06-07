@@ -11,8 +11,7 @@ import 'package:meetoplay/home_page.dart';
 import 'package:meetoplay/menu_page.dart';
 import 'package:meetoplay/services/database.dart';
 
-// Import Meeting class here
-import 'package:meetoplay/models/meetings.dart'; // Zaimportuj swoją klasę Meeting
+import 'package:meetoplay/models/meetings.dart';
 
 class EditMeetPage extends StatefulWidget {
   final Meeting meeting;
@@ -135,7 +134,7 @@ class _EditMeetPageState extends State<EditMeetPage> {
   String formatTimeOfDay(TimeOfDay time) {
     final now = DateTime.now();
     final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    final format = DateFormat('HH:mm'); // Używając DateFormat z pakietu intl
+    final format = DateFormat('HH:mm');
     return format.format(dt);
   }
 
@@ -184,7 +183,6 @@ class _EditMeetPageState extends State<EditMeetPage> {
                 },
               ),
               const SizedBox(height: 20),
-              // Additional fields for time, category, and skill level
               TextFormField(
                 controller: _dateController,
                 decoration: const InputDecoration(
@@ -473,7 +471,6 @@ class _EditMeetPageState extends State<EditMeetPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Update meeting logic here
                         DatabaseService(
                                 uid: FirebaseAuth.instance.currentUser!.uid)
                             .updateMeeting(
@@ -488,7 +485,7 @@ class _EditMeetPageState extends State<EditMeetPage> {
                           0,
                           FirebaseAuth.instance.currentUser!.displayName ??
                               "Organizer",
-                          4.5, // Example rating
+                          4.5,
                           [],
                           [],
                           FirebaseAuth.instance.currentUser!.uid,

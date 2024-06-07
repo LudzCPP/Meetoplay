@@ -19,7 +19,7 @@ class _CalendarPageState extends State<CalendarPage> {
   late DateTime _focusedDay;
   List<Meeting> _selectedEvents = [];
   final Map<DateTime, List<String>> _allEvents = {};
-  bool isInitialized = false; // Flaga inicjalizacji
+  bool isInitialized = false;
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _CalendarPageState extends State<CalendarPage> {
         _selectedDay = _focusedDay;
         _selectedEvents = _getEventsForDay(_selectedDay);
         Intl.defaultLocale = 'pl_PL';
-        isInitialized = true; // Ustawienie flagi po zakończeniu inicjalizacji
+        isInitialized = true;
       });
     });
   }
@@ -61,7 +61,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Sprawdź, czy inicjalizacja jest zakończona
     if (!isInitialized) {
       return const Scaffold(
         backgroundColor: darkBlue,

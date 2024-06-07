@@ -248,7 +248,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   void endEvent() async {
     final batch = FirebaseFirestore.instance.batch();
 
-    // Add event to history for each participant
     for (Participant participant in participants) {
       final userDocRef = FirebaseFirestore.instance
           .collection('users')
@@ -274,14 +273,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                     'userId': p.userId,
                   })
               .toList(),
-          'ratings': {} // Add an empty ratings field
+          'ratings': {}
         });
 
         batch.update(userDocRef, {'history': history});
       }
     }
 
-    // Delete event from meetings collection
     final meetingDocRef = FirebaseFirestore.instance
         .collection('meetings')
         .doc(widget.meeting.meetingId);
@@ -293,7 +291,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       isEnded = true;
     });
 
-    // Navigate to HomePage and remove all previous routes
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const HomePage()),
@@ -701,7 +698,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       teamA = shuffledParticipants.sublist(0, halfSize);
       teamB = shuffledParticipants.sublist(halfSize);
 
-      Navigator.of(context).pop(); // Close the loading screen dialog
+      Navigator.of(context).pop();
 
       setState(() {
         isLoading = false;
@@ -754,7 +751,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       constraints: const BoxConstraints(maxHeight: 390),
       padding: const EdgeInsets.all(4.0),
       child: GroupChatPage(
-          meetingId: meetingId), // Przekazujesz meetingId do widgetu czatu
+          meetingId: meetingId),
     );
   }
 }

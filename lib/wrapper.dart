@@ -27,7 +27,6 @@ class AuthWrapper extends StatelessWidget {
           if (user.emailVerified == false && user.isAnonymous == false) {
             return VerifyEmailPage(user: user);
           } else {
-            // Listen for token changes to manage user session
             FirebaseAuth.instance.idTokenChanges().listen((User? user) async {
               if (user != null) {
                 try {
@@ -41,7 +40,6 @@ class AuthWrapper extends StatelessWidget {
               }
             });
 
-            // Fetch user-specific data from Firestore and update global markers
             return FutureBuilder<void>(
               future: _fetchMeetingsAndMarkers(user),
               builder: (context, snapshot) {
@@ -90,11 +88,9 @@ class AuthWrapper extends StatelessWidget {
 
       List<Participant> participants = [];
       for (var participant in data['participants']) {
-        // Check if each field of the participant exists and is not null
         String name = participant['name'] ?? 'Nieznany';
         double rating = (participant['rating']?.toDouble() ?? 0);
 
-        // Add participant to the list with validated data
         participants.add(Participant(
           name: name,
           rating: rating,
@@ -124,7 +120,7 @@ class AuthWrapper extends StatelessWidget {
         globalMarkers.add(MeetMarker(
           location: location,
           meeting: meeting,
-          color: Colors.red, // Example: dynamic color based on data
+          color: Colors.red,
         ));
       } else {
         globalMarkers.add(MeetMarker(

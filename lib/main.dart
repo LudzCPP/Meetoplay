@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:meetoplay/admin/admin_dashboard.dart';
 import 'package:meetoplay/services/notification.dart';
-import 'package:meetoplay/services/notification_service.dart';
 import 'package:meetoplay/wrapper.dart';
 import 'global_variables.dart';
 import 'firebase_options.dart';
@@ -63,7 +62,6 @@ void main() async {
     }
   });
 
-// to handle foreground notifications
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     String payloadData = jsonEncode(message.data);
     print("Got a message in foreground");

@@ -64,7 +64,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         appBar: AppBar(
           title: const Text("Weryfikacja Email"),
           backgroundColor: darkBlue,
-          automaticallyImplyLeading: false, // Removes the back button
+          automaticallyImplyLeading: false,
         ),
         body: Center(
           child: Padding(

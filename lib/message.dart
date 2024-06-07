@@ -15,11 +15,9 @@ class _MessageState extends State<Message> {
   @override
   Widget build(BuildContext context) {
     final data = ModalRoute.of(context)!.settings.arguments;
-    // for background and terminated state
     if (data is RemoteMessage) {
       payload = data.data;
     }
-    // for foreground state
     if (data is NotificationResponse) {
       payload = jsonDecode(data.payload!);
     }

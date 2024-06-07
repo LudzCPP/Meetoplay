@@ -15,7 +15,7 @@ class Meeting {
   double organizerRating;
   List<Participant> participants;
   String ownerId;
-  String status; // Dodaj to pole
+  String status;
 
   Meeting({
     required this.meetingId,
@@ -31,9 +31,7 @@ class Meeting {
     required this.organizerRating,
     required this.participants,
     required this.ownerId,
-    this.status = 'ongoing', // Domyślnie status to 'ongoing'
+    this.status = 'ongoing',
   });
-
-  // Pamiętaj o zaktualizowaniu serializacji/deserializacji
 }
 

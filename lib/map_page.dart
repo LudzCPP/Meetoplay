@@ -80,8 +80,8 @@ class _MapPageState extends State<MapPage> {
                   ),
                   cameraConstraint: CameraConstraint.contain(
                     bounds: LatLngBounds(
-                      const LatLng(49.002, 14.122), // SW point of Poland
-                      const LatLng(54.838, 24.145), // NE point of Poland
+                      const LatLng(49.002, 14.122),
+                      const LatLng(54.838, 24.145),
                     ),
                   ),
                   minZoom: 7,
@@ -124,7 +124,7 @@ class _MapPageState extends State<MapPage> {
 
   void _showFilterDialog() {
     String? tempSelectedSport =
-        selectedSport; // tymczasowa zmienna do przechowywania wyboru
+        selectedSport;
 
     showDialog(
       context: context,
